@@ -3,14 +3,34 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ThemeProvider } from "@/components/theme-provider";
+import { useAuth } from "@/hooks/useAuth";
 import NotFound from "@/pages/not-found";
+import Landing from "@/pages/landing";
+import Directory from "@/pages/directory";
+import BrandDetail from "@/pages/brand-detail";
+import Compare from "@/pages/compare";
+import Settings from "@/pages/settings";
+import FranchiseePortal from "@/pages/franchisee";
+import FranchisorPortal from "@/pages/franchisor";
+import AdminDashboard from "@/pages/admin";
 
 function Router() {
+  const { user, isAuthenticated, isLoading } = useAuth();
+
   return (
     <Switch>
-      {/* Add pages below */}
-      {/* <Route path="/" component={Home}/> */}
-      {/* Fallback to 404 */}
+      <Route path="/" component={isLoading || !isAuthenticated ? Landing : Directory} />
+      <Route path="/directory" component={Directory} />
+      <Route path="/brand/:slug" component={BrandDetail} />
+      <Route path="/compare" component={Compare} />
+      <Route path="/settings" component={Settings} />
+      <Route path="/franchisee" component={FranchiseePortal} />
+      <Route path="/franchisee/:rest*" component={FranchiseePortal} />
+      <Route path="/franchisor" component={FranchisorPortal} />
+      <Route path="/franchisor/:rest*" component={FranchisorPortal} />
+      <Route path="/admin" component={AdminDashboard} />
+      <Route path="/admin/:rest*" component={AdminDashboard} />
       <Route component={NotFound} />
     </Switch>
   );
@@ -19,10 +39,12 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Router />
-      </TooltipProvider>
+      <ThemeProvider defaultTheme="light" storageKey="zeeverify-theme">
+        <TooltipProvider>
+          <Toaster />
+          <Router />
+        </TooltipProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }
