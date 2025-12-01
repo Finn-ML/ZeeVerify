@@ -222,7 +222,7 @@ export default function Compare() {
                   </Card>
                 </PopoverTrigger>
                 <PopoverContent className="w-80 p-0" align="start">
-                  <Command>
+                  <Command shouldFilter={false}>
                     <CommandInput
                       placeholder="Search brands..."
                       value={searchQuery}
@@ -230,30 +230,38 @@ export default function Compare() {
                       data-testid="input-search-brand"
                     />
                     <CommandList>
-                      <CommandEmpty>No brands found.</CommandEmpty>
-                      <CommandGroup>
-                        {availableSearchResults.map((brand) => (
-                          <CommandItem
-                            key={brand.id}
-                            onSelect={() => addBrand(brand.id)}
-                            className="flex items-center gap-3 cursor-pointer"
-                            data-testid={`option-brand-${brand.id}`}
-                          >
-                            <div className="h-8 w-8 rounded bg-muted flex items-center justify-center shrink-0">
-                              {brand.logoUrl ? (
-                                <img src={brand.logoUrl} alt="" className="h-full w-full object-cover rounded" />
-                              ) : (
-                                <Building2 className="h-4 w-4 text-muted-foreground" />
-                              )}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="font-medium truncate">{brand.name}</p>
-                              <p className="text-xs text-muted-foreground">{brand.category}</p>
-                            </div>
-                            <ZScoreBadge score={parseFloat(brand.zScore || "0")} size="sm" />
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
+                      {searchQuery.length < 2 ? (
+                        <div className="p-4 text-sm text-muted-foreground text-center">
+                          Type at least 2 characters to search...
+                        </div>
+                      ) : availableSearchResults.length === 0 ? (
+                        <CommandEmpty>No brands found.</CommandEmpty>
+                      ) : (
+                        <CommandGroup>
+                          {availableSearchResults.map((brand) => (
+                            <CommandItem
+                              key={brand.id}
+                              value={brand.name}
+                              onSelect={() => addBrand(brand.id)}
+                              className="flex items-center gap-3 cursor-pointer"
+                              data-testid={`option-brand-${brand.id}`}
+                            >
+                              <div className="h-8 w-8 rounded bg-muted flex items-center justify-center shrink-0">
+                                {brand.logoUrl ? (
+                                  <img src={brand.logoUrl} alt="" className="h-full w-full object-cover rounded" />
+                                ) : (
+                                  <Building2 className="h-4 w-4 text-muted-foreground" />
+                                )}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="font-medium truncate">{brand.name}</p>
+                                <p className="text-xs text-muted-foreground">{brand.category}</p>
+                              </div>
+                              <ZScoreBadge score={parseFloat(brand.zScore || "0")} size="sm" />
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      )}
                     </CommandList>
                   </Command>
                 </PopoverContent>
