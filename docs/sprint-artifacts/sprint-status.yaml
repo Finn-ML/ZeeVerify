@@ -1,0 +1,112 @@
+# generated: 2025-12-04
+# project: ZeeVerify
+# project_key: zeeverify-phase1
+# tracking_system: file-system
+# story_location: docs/sprint-artifacts
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic exists in epic file but not contexted
+#   - contexted: Epic tech context created (required before drafting stories)
+#   - in-progress: Epic has stories being actively developed
+#   - done: Epic completed
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - drafted: Story file created in stories folder by *create-story
+#   - ready-for-dev: Draft approved and story context created by *story-ready
+#   - in-progress: Developer actively working on implementation by *dev-story
+#   - review: Implementation complete, ready for review by *code-review
+#   - done: Story completed by *story-done
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - completed: Retrospective has been done by *retrospective
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epics should be 'contexted' before stories can be 'drafted'
+# - Stories can be worked in parallel if team capacity allows
+# - SM typically drafts next story after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', SM reviews, then Dev moves to 'done'
+
+generated: 2025-12-04
+project: ZeeVerify
+project_key: zeeverify-phase1
+tracking_system: file-system
+story_location: docs/sprint-artifacts
+
+development_status:
+  # ============================================
+  # Epic 1: Email Infrastructure Foundation
+  # Dependencies: None (foundation epic)
+  # FRs: FR-4.3.1, FR-4.3.2, FR-4.3.8
+  # ============================================
+  epic-1: backlog
+  1-1-postmark-email-service-setup: backlog
+  1-2-base-email-template-system: backlog
+  1-3-email-template-variants: backlog
+  epic-1-retrospective: optional
+
+  # ============================================
+  # Epic 2: User Authentication & Onboarding
+  # Dependencies: Epic 1 (Email Infrastructure)
+  # FRs: FR-4.1.1-7, FR-4.3.3, FR-4.3.4
+  # ============================================
+  epic-2: backlog
+  2-1-user-schema-authentication-columns: backlog
+  2-2-user-registration: backlog
+  2-3-user-login: backlog
+  2-4-email-verification: backlog
+  2-5-password-reset-flow: backlog
+  2-6-remove-replit-oidc-authentication: backlog
+  epic-2-retrospective: optional
+
+  # ============================================
+  # Epic 3: Account Management
+  # Dependencies: Epic 2 (Authentication)
+  # FRs: FR-4.2.1-6
+  # ============================================
+  epic-3: backlog
+  3-1-profile-settings-page: backlog
+  3-2-email-change: backlog
+  3-3-password-change: backlog
+  3-4-account-deletion: backlog
+  epic-3-retrospective: optional
+
+  # ============================================
+  # Epic 4: Brand Claiming with Stripe
+  # Dependencies: Epic 2 (Authentication)
+  # FRs: FR-4.5.1, FR-4.5.2, FR-4.5.9, FR-4.10.1-8
+  # ============================================
+  epic-4: backlog
+  4-1-stripe-service-setup: backlog
+  4-2-brand-claim-checkout-flow: backlog
+  4-3-stripe-webhook-handler: backlog
+  4-4-verified-badge-display: backlog
+  4-5-payment-success-page: backlog
+  epic-4-retrospective: optional
+
+  # ============================================
+  # Epic 5: Notification System
+  # Dependencies: Epic 1 (Email), Epic 2 (Auth)
+  # FRs: FR-4.3.5-7, FR-4.9.7, FR-4.10.7
+  # ============================================
+  epic-5: backlog
+  5-1-new-review-notification-for-franchisors: backlog
+  5-2-franchisor-response-notification: backlog
+  5-3-moderation-outcome-notification: backlog
+  5-4-payment-confirmation-email: backlog
+  epic-5-retrospective: optional
+
+  # ============================================
+  # Epic 6: Admin Enhancements
+  # Dependencies: Epic 4 (Stripe), Epic 2 (Auth)
+  # FRs: FR-4.7.5, FR-4.8.7, FR-4.8.9
+  # ============================================
+  epic-6: backlog
+  6-1-admin-payment-dashboard: backlog
+  6-2-admin-password-reset-for-users: backlog
+  6-3-admin-audit-logging: backlog
+  epic-6-retrospective: optional

@@ -2,7 +2,7 @@
 
 ## Overview
 
-ZeeVerify is a comprehensive franchise review platform that enables verified franchisees to share authentic experiences while helping prospective franchise investors make informed decisions. The platform features a directory of approximately 4,000 franchise brands, AI-powered content moderation, a proprietary Z Score rating system, and distinct portals for franchisees, franchisors, and administrators.
+ZeeVerify is a comprehensive franchise review platform that enables verified franchisees to share authentic experiences while helping prospective franchise investors make informed decisions. The platform features a directory of approximately 4,000 franchise brands, manual content moderation, a proprietary Z Score rating system, and distinct portals for franchisees, franchisors, and administrators.
 
 The application serves multiple user types:
 - **Browsers**: Public users exploring franchise opportunities
@@ -30,14 +30,15 @@ Preferred communication style: Simple, everyday language.
 - **Routing**: Wouter for lightweight client-side routing
 - **State Management**: TanStack Query (React Query) for server state, React hooks for local state
 - **UI Components**: Shadcn/ui component library built on Radix UI primitives
-- **Styling**: Tailwind CSS with custom design system based on Material Design and Carbon Design principles
-- **Typography**: Poppins font family throughout (specified in design guidelines)
+- **Styling**: Tailwind CSS with custom "Financial Editorial Luxury" design system
+- **Typography**: Playfair Display (headlines), DM Sans (body), JetBrains Mono (data/numbers)
 
 **Design System Approach**:
-- System-based design optimized for data-dense review platforms
+- "Financial Editorial Luxury" aesthetic inspired by Bloomberg and luxury magazines
 - Custom spacing scale and grid system for consistent layouts
-- Color system with semantic tokens for light/dark mode support
-- Component library emphasizes trust and verification as core values
+- Color system: Deep navy primary, warm gold accent, emerald success with semantic tokens for light/dark mode
+- Sophisticated visual effects: grain textures, glassmorphism, editorial shadows
+- Component library emphasizes trust, authority, and premium feel for franchise investment decisions
 
 ### Backend Architecture
 
@@ -78,24 +79,19 @@ Preferred communication style: Simple, everyday language.
 
 **Indexing Strategy**: Indexes on frequently queried fields (expire time for sessions, foreign keys, slug lookups)
 
-### AI Integration
+### Content Moderation
 
-**OpenAI Integration** (GPT-4):
-- **Content Moderation**: Automated analysis of review submissions
-- **Sentiment Analysis**: Classifies reviews as positive/negative/neutral with score (-1.0 to 1.0)
-- **Flag Detection**: Identifies profanity, spam, defamatory content, personal attacks
-- **Keyword Extraction**: Powers word frequency visualization feature
-- **Moderation Categories**: "clean" (auto-approve), "needs_review" (manual queue), "rejected" (auto-block)
+**Manual Moderation Approach**:
+- All submitted reviews go to "pending" status for admin review
+- Admin dashboard provides moderation queue with approve/reject actions
+- Moderation notes captured for audit trail
+- Word frequency analysis for brand review visualization
 
-**Implementation Pattern**: 
-- Structured JSON responses for consistent parsing
-- Temperature set to 0.3 for deterministic moderation
-- System prompts define clear violation guidelines
-
-**Alternative Considered**: Rule-based moderation
-- **Pros of AI**: Nuanced understanding of context, handles edge cases, reduces manual work
-- **Cons**: API costs, latency, potential for inconsistent decisions
-- **Chosen because**: Higher accuracy, scales with volume, improves over time
+**Moderation Workflow**:
+1. User submits review → status set to "pending"
+2. Admin reviews in moderation queue
+3. Admin approves (published) or rejects (with notes)
+4. Franchisor can respond to approved reviews
 
 ### Payment Processing
 
@@ -116,18 +112,13 @@ Preferred communication style: Simple, everyday language.
    - WebSocket connection pooling
    - Automatic scaling and backups
 
-2. **OpenAI API**
-   - GPT-4 model for content analysis
-   - JSON response format for structured data
-   - Rate limiting considerations for production
-
-3. **Stripe**
+2. **Stripe**
    - Payment processing infrastructure
    - Identity verification service
    - Subscription management (planned)
    - Webhook event handling
 
-4. **Replit Auth/OIDC**
+3. **Replit Auth/OIDC**
    - User authentication provider
    - Session management
    - Token refresh handling
@@ -178,7 +169,6 @@ Preferred communication style: Simple, everyday language.
 Required environment variables:
 - `DATABASE_URL`: PostgreSQL connection string
 - `SESSION_SECRET`: Session encryption key
-- `OPENAI_API_KEY`: OpenAI API authentication
 - `ISSUER_URL`: OIDC issuer (defaults to Replit)
 - `REPL_ID`: Replit environment identifier
 
@@ -199,5 +189,6 @@ Required environment variables:
 - Brand detail pages with reviews, Z Score, and lead capture
 - Comparison tool for up to 4 brands side-by-side
 - Authentication with Replit Auth
-- AI-powered content moderation ready (OpenAI integration)
+- Manual content moderation with admin queue
 - Full dark mode support with theme toggle
+- "Financial Editorial Luxury" design system implemented

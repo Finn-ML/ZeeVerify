@@ -1,92 +1,149 @@
 import { Link } from "wouter";
+import { Sparkles } from "lucide-react";
 
 export function Footer() {
+  const currentYear = new Date().getFullYear();
+
+  const footerLinks = {
+    explore: [
+      { label: "Brand Directory", href: "/directory", testId: "link-footer-directory" },
+      { label: "Compare Brands", href: "/compare", testId: "link-footer-compare" },
+      { label: "Top Rated", href: "/directory?sort=top-rated" },
+      { label: "Categories", href: "/directory" },
+    ],
+    business: [
+      { label: "Claim Your Profile", href: "/claim" },
+      { label: "Franchisor Portal", href: "/franchisor" },
+      { label: "Franchisee Portal", href: "/franchisee" },
+      { label: "Advertise", href: "/advertise" },
+    ],
+    company: [
+      { label: "About Us", href: "/about" },
+      { label: "Contact", href: "/contact" },
+      { label: "Privacy Policy", href: "/privacy" },
+      { label: "Terms of Service", href: "/terms" },
+    ],
+  };
+
   return (
-    <footer className="border-t bg-muted/30">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-          <div className="col-span-2 md:col-span-1">
-            <h3 className="font-semibold text-lg text-primary mb-4">ZeeVerify</h3>
-            <p className="text-sm text-muted-foreground">
-              Verified reviews powered by franchisees. Make informed franchise investment decisions.
+    <footer className="relative border-t border-border/50 bg-muted/20">
+      {/* Grain overlay */}
+      <div className="absolute inset-0 grain-overlay pointer-events-none opacity-30" />
+
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
+        {/* Main Footer Content */}
+        <div className="py-16 grid grid-cols-2 md:grid-cols-12 gap-8 lg:gap-12">
+          {/* Brand Column */}
+          <div className="col-span-2 md:col-span-4 lg:col-span-5">
+            {/* Logo */}
+            <Link href="/" className="inline-flex items-center gap-3 group">
+              <div className="relative h-10 w-10 flex items-center justify-center">
+                <div className="absolute inset-0 rounded-lg bg-gradient-to-br from-primary to-primary/80" />
+                <span className="relative font-display text-lg font-bold text-primary-foreground">Z</span>
+              </div>
+              <span className="font-display text-xl font-semibold tracking-tight text-foreground">
+                Zee<span className="text-accent">Verify</span>
+              </span>
+            </Link>
+
+            <p className="mt-4 text-sm text-muted-foreground leading-relaxed max-w-xs">
+              The premier franchise intelligence platform. Verified reviews from real owners,
+              AI-powered analysis, and data-driven insights.
             </p>
+
+            {/* Trust badge */}
+            <div className="mt-6 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/10 border border-accent/20">
+              <Sparkles className="h-3.5 w-3.5 text-accent" />
+              <span className="text-xs font-medium text-accent">
+                Trusted by 50,000+ investors
+              </span>
+            </div>
           </div>
-          
-          <div>
-            <h4 className="font-medium text-sm mb-4">Explore</h4>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>
-                <Link href="/directory" className="hover:text-foreground transition-colors" data-testid="link-footer-directory">
-                  Brand Directory
-                </Link>
-              </li>
-              <li>
-                <Link href="/compare" className="hover:text-foreground transition-colors" data-testid="link-footer-compare">
-                  Compare Brands
-                </Link>
-              </li>
-              <li>
-                <Link href="/directory?sort=top-rated" className="hover:text-foreground transition-colors">
-                  Top Rated
-                </Link>
-              </li>
+
+          {/* Explore Column */}
+          <div className="col-span-1 md:col-span-2">
+            <h4 className="font-semibold text-sm text-foreground mb-4 uppercase tracking-wider">
+              Explore
+            </h4>
+            <ul className="space-y-3">
+              {footerLinks.explore.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="text-sm text-muted-foreground hover:text-accent transition-colors duration-200"
+                    data-testid={link.testId}
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
-          
-          <div>
-            <h4 className="font-medium text-sm mb-4">For Businesses</h4>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>
-                <Link href="/claim" className="hover:text-foreground transition-colors">
-                  Claim Your Profile
-                </Link>
-              </li>
-              <li>
-                <Link href="/franchisor" className="hover:text-foreground transition-colors">
-                  Franchisor Portal
-                </Link>
-              </li>
-              <li>
-                <Link href="/franchisee" className="hover:text-foreground transition-colors">
-                  Franchisee Portal
-                </Link>
-              </li>
+
+          {/* Business Column */}
+          <div className="col-span-1 md:col-span-3">
+            <h4 className="font-semibold text-sm text-foreground mb-4 uppercase tracking-wider">
+              For Business
+            </h4>
+            <ul className="space-y-3">
+              {footerLinks.business.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="text-sm text-muted-foreground hover:text-accent transition-colors duration-200"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
-          
-          <div>
-            <h4 className="font-medium text-sm mb-4">Company</h4>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>
-                <Link href="/about" className="hover:text-foreground transition-colors">
-                  About Us
-                </Link>
-              </li>
-              <li>
-                <Link href="/contact" className="hover:text-foreground transition-colors">
-                  Contact
-                </Link>
-              </li>
-              <li>
-                <Link href="/privacy" className="hover:text-foreground transition-colors">
-                  Privacy Policy
-                </Link>
-              </li>
-              <li>
-                <Link href="/terms" className="hover:text-foreground transition-colors">
-                  Terms of Service
-                </Link>
-              </li>
+
+          {/* Company Column */}
+          <div className="col-span-1 md:col-span-3 lg:col-span-2">
+            <h4 className="font-semibold text-sm text-foreground mb-4 uppercase tracking-wider">
+              Company
+            </h4>
+            <ul className="space-y-3">
+              {footerLinks.company.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="text-sm text-muted-foreground hover:text-accent transition-colors duration-200"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
         </div>
-        
-        <div className="border-t mt-8 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+
+        {/* Bottom Bar */}
+        <div className="border-t border-border/50 py-6 flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} ZeeVerify. All rights reserved.
+            © {currentYear} ZeeVerify. All rights reserved.
           </p>
-          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-            <span>Trusted by franchisees nationwide</span>
+
+          <div className="flex items-center gap-6">
+            <Link
+              href="/privacy"
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Privacy
+            </Link>
+            <Link
+              href="/terms"
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Terms
+            </Link>
+            <Link
+              href="/cookies"
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Cookies
+            </Link>
           </div>
         </div>
       </div>

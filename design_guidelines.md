@@ -1,160 +1,189 @@
 # ZeeVerify Design Guidelines
 
 ## Design Approach
-**System-Based Approach** using principles from Material Design and Carbon Design System, optimized for data-dense review platforms with trust and verification as core values. The design prioritizes clarity, efficiency, and credibility over visual flair.
+**Financial Editorial Luxury** - A sophisticated design aesthetic inspired by Bloomberg and luxury magazines, optimized for franchise investment decisions. The design prioritizes trust, authority, and data presentation with a premium feel that conveys the seriousness of franchise investment.
 
 ## Typography System
-**Font Family:** Poppins throughout
 
-**Hierarchy:**
-- H1: 2.5rem (40px), SemiBold (600) - Page titles, brand names
-- H2: 2rem (32px), SemiBold (600) - Section headers
-- H3: 1.5rem (24px), Medium (500) - Card titles, subsection headers
-- H4: 1.25rem (20px), Medium (500) - List items, feature titles
-- Body Large: 1.125rem (18px), Regular (400) - Primary content, reviews
-- Body: 1rem (16px), Regular (400) - Secondary content, descriptions
-- Small: 0.875rem (14px), Regular (400) - Metadata, timestamps, captions
-- Tiny: 0.75rem (12px), Medium (500) - Labels, badges
+### Font Families
+- **Display (Headlines):** Playfair Display - Editorial elegance for headlines and emphasis
+- **Body (Content):** DM Sans - Modern, clean sans-serif for excellent legibility
+- **Mono (Data):** JetBrains Mono - Precision typography for numbers and statistics
+
+### Hierarchy
+- H1: 4rem-5rem (64-80px), Display font, Bold - Hero headlines
+- H2: 2.5rem-3rem (40-48px), Display font, Bold - Section headers
+- H3: 1.5rem (24px), Display font, SemiBold - Card titles, subsection headers
+- H4: 1.25rem (20px), Body font, SemiBold - List items, feature titles
+- Body Large: 1.125rem (18px), Body font, Regular - Primary content, descriptions
+- Body: 1rem (16px), Body font, Regular - Secondary content
+- Small: 0.875rem (14px), Body font, Regular - Metadata, timestamps
+- Data: Various sizes, Mono font - Statistics, scores, financial figures
+
+## Color System
+
+### Light Mode
+| Token | HSL Value | Usage |
+|-------|-----------|-------|
+| **Primary (Deep Navy)** | 222 47% 11% | Primary buttons, text, authority elements |
+| **Primary Foreground** | 48 96% 89% | Text on primary backgrounds |
+| **Accent (Warm Gold)** | 45 93% 47% | CTAs, highlights, premium indicators |
+| **Success (Emerald)** | 160 84% 29% | Positive metrics, growth, verified badges |
+| **Background** | 220 20% 98% | Page backgrounds |
+| **Card** | 0 0% 100% | Card backgrounds |
+| **Muted** | 220 14% 96% | Secondary backgrounds, disabled states |
+| **Border** | 220 13% 91% | Borders, dividers |
+| **Destructive** | 0 84% 60% | Errors, negative actions |
+
+### Dark Mode
+| Token | HSL Value | Usage |
+|-------|-----------|-------|
+| **Primary** | 48 96% 89% | Light text on dark backgrounds |
+| **Accent (Warm Gold)** | 45 93% 58% | Brighter gold for dark mode |
+| **Success** | 160 84% 39% | Brighter emerald |
+| **Background** | 222 47% 6% | Dark page backgrounds |
+| **Card** | 222 40% 8% | Dark card backgrounds |
 
 ## Layout & Spacing System
-**Spacing Scale:** Use Tailwind units of 1, 2, 3, 4, 6, 8, 12, 16, 20, 24
 
-**Common Patterns:**
-- Component padding: p-6 (forms, cards), p-8 (major sections)
-- Section spacing: py-12 to py-20 between major sections
-- Gap between items: gap-4 (tight lists), gap-6 (card grids), gap-8 (major components)
-- Container max-width: max-w-7xl for main content, max-w-6xl for forms/dashboards
+### Spacing Scale
+Use Tailwind units: 1, 2, 3, 4, 6, 8, 12, 16, 20, 24, 32
 
-**Grid System:**
-- Public directory: 3-column grid (lg:grid-cols-3) for brand cards
+### Common Patterns
+- Component padding: p-6 (cards), p-8 (major sections)
+- Section spacing: py-24 to py-32 between major sections
+- Gap between items: gap-4 (tight), gap-6 (cards), gap-8 (major components)
+- Container max-width: max-w-7xl for main content
+
+### Grid System
+- Public directory: 4-column grid (lg:grid-cols-4) for brand cards
 - Comparison tools: 2-4 column comparison tables
-- Dashboards: Mixed layouts with sidebar (20% width) + main content (80%)
-- Review lists: Single column, full-width cards with internal grid layouts
+- Hero sections: 12-column grid with asymmetric layouts (7/5 splits)
+- Features: 4-column grid (sm:grid-cols-2 lg:grid-cols-4)
 
 ## Component Library
 
 ### Navigation
-**Public Header:**
-- Sticky top navigation with logo (left), search bar (center), login/signup CTAs (right)
-- Height: h-16, backdrop blur effect
-- Mobile: Hamburger menu collapsing to drawer
-
-**Portal Sidebars:**
-- Fixed left sidebar (w-64) with navigation menu
-- Collapsible on mobile to hamburger
-- Active state: Background fill with slightly darker treatment
-- Icons: 1.25rem with 0.75rem gap to label text
+**Header:**
+- Sticky with backdrop blur (bg-background/80 backdrop-blur-xl)
+- Height: h-16
+- Gold accent line at top (gradient via-accent/50)
+- Logo with animated gold dot indicator
+- Navigation pills in muted/50 container
+- Search bar with animated focus states
 
 ### Cards & Containers
-**Brand Directory Cards:**
-- Aspect ratio: 4:3 or 16:9 for featured images
-- Card padding: p-6
-- Includes: Brand logo/image (top), title, category badge, Z score badge, metrics preview (3-4 key stats in grid)
-- Hover: Subtle elevation increase (shadow-lg)
+**Brand Cards:**
+- Hover accent line at top (scale-x-0 → scale-x-100)
+- Glassmorphism effect on featured cards (glass-card class)
+- Sophisticated shadows (shadow-lg on hover)
+- Gold accent borders on hover (border-accent/30)
 
-**Review Cards:**
-- Full-width with internal 2-column layout: Left (reviewer info, verification badge) | Right (review content)
-- Padding: p-8
-- Border: border-b for separation, not full border
-- Includes: Star rating, timestamp, franchisee name, verification status, review text, franchisor response (if exists)
+**Feature Cards:**
+- Gradient icon backgrounds (from-accent/20 to-accent/5)
+- Bottom accent line animation on hover
+- Data ticker style for statistics
 
-**Stat Cards (Dashboard):**
-- 4-column grid on desktop, 2-column tablet, 1-column mobile
-- Padding: p-6
-- Display: Large number (2.5rem) + label + trend indicator (icon + percentage)
+**Glass Cards:**
+- backdrop-blur-xl bg-card/80
+- Subtle border (border-card-border)
+- Shadow-lg for depth
 
-### Forms
-**Input Fields:**
-- Height: h-12 for text inputs
-- Padding: px-4
-- Border: 2px solid with focus ring (ring-2)
-- Label positioning: Above input with mb-2
-- Spacing between fields: space-y-6
+### Buttons
+**Primary:**
+- h-14, px-8 for large CTAs
+- Shadow with primary color glow (shadow-lg shadow-primary/20)
+- btn-glow class for shimmer effect on hover
 
-**Buttons:**
-- Primary: h-12, px-8, rounded corners (rounded-lg)
-- Secondary: Same dimensions with outline treatment
-- Icon buttons: w-10 h-10, rounded-full for circular actions
-- Button groups: gap-3 between adjacent buttons
+**Secondary/Outline:**
+- border-2 for definition
+- Hover states with muted backgrounds
 
 ### Data Display
-**Tables:**
-- Striped rows for readability (alternating background)
-- Sticky header on scroll
-- Column padding: px-4 py-3
-- Minimum row height: h-16 for comfortable tap targets
+**Z Score Badge:**
+- Gradient backgrounds based on score tier
+- Glow effect (blur-md shadow)
+- Ring for definition
+- Color-coded: 4.5+ green, 4+ emerald, 3+ gold, 2+ amber, <2 red
 
-**Badges:**
-- Rounded-full, px-3 py-1, text-xs font-medium
-- Types: Verification status (verified/pending/rejected), claimed/unclaimed, category tags
-- Icon + text combination where applicable
+**Statistics:**
+- data-ticker class for monospace numbers
+- Large display font for key metrics
+- Uppercase tracking-wider labels
 
-**Z Score Display:**
-- Large prominent number (3-4rem) in circular badge or prominent rectangular container
-- Breakdown: Horizontal bar charts showing category scores
-- Comparison: Side-by-side score displays in comparison view
+### Visual Effects
 
-### Moderation & Admin
-**Moderation Queue:**
-- List view with expandable rows
-- Each row: Compact preview (left) + metadata + action buttons (right)
-- Filters: Sticky filter bar above queue (category, status, date range)
-- Batch actions: Checkbox selection with floating action bar
+**Grain Texture:**
+- Subtle noise overlay (grain-overlay class)
+- 3% opacity in light mode, 1.5% in dark mode
+- Adds sophistication and depth
 
-**Analytics Dashboard:**
-- Top: 4-stat overview cards
-- Middle: Large chart area (full-width) for trends
-- Bottom: 2-column layout (review volume | sentiment breakdown)
+**Gradient Mesh:**
+- Multi-point radial gradients (bg-gradient-mesh)
+- Used in hero backgrounds
+- Accent and primary color combinations
 
-### Public Features
-**Directory/Search:**
-- Search bar: h-14, prominent with search icon
-- Filters: Sidebar (left, w-1/4) with checkbox groups and dropdowns
-- Results: Main area (right, w-3/4) with sort dropdown (top-right)
+**Animations:**
+- fade-in-up: 0.6s ease-out with stagger delays
+- Stagger classes: stagger-1 through stagger-6 (0.1s increments)
+- float: 6s ease-in-out infinite for floating elements
+- pulse-glow: 2s ease-in-out infinite for attention CTAs
 
-**Comparison Tool:**
-- Sticky header with selected brands (max 4)
-- Scrollable comparison table with category groupings
-- Metrics: Row-based comparison with visual indicators (bars, icons)
+### Shadows
+```css
+--shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+--shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 2px 4px rgba(0, 0, 0, 0.03);
+--shadow-md: 0 6px 12px rgba(0, 0, 0, 0.06), 0 4px 6px rgba(0, 0, 0, 0.03);
+--shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.08), 0 6px 12px rgba(0, 0, 0, 0.04);
+--shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.1), 0 10px 20px rgba(0, 0, 0, 0.05);
+```
 
-**Word Frequency Visualization:**
-- Word cloud: Center area, larger size for higher frequency
-- Bar chart: Alternative view showing top 20 terms with counts
-- Toggle: Switch between cloud and chart views
+## Section Patterns
 
-## Images
+### Hero Sections
+- Asymmetric 7/5 or 8/4 column splits
+- Large editorial headlines with highlight underlines
+- Floating badges and social proof elements
+- Gradient mesh backgrounds with geometric accents
+- Staggered reveal animations
 
-**Hero Section (Public Landing):**
-- Large hero image: Franchise business owners in positive setting (handshake, success meeting)
-- Dimensions: Full-width, h-[500px] on desktop
-- Overlay: Semi-transparent gradient for text readability
-- CTA buttons on hero: Blurred background treatment (backdrop-blur-sm)
+### Stats Sections
+- Border-y with muted background
+- 4-column grid with centered content
+- Large data-ticker numbers with accent suffixes
+- Icon badges above numbers
 
-**Brand Logos/Images:**
-- Brand cards: 16:9 aspect ratio placeholder for franchise logos
-- Default: Generic franchise icon if no logo uploaded
+### Feature Sections
+- Editorial-style section headers (eyebrow + headline + description)
+- Gold accent underlines on key words
+- 4-column card grids
+- Bottom accent lines on cards
 
-**Verification Documents:**
-- Thumbnails in gallery layout (grid-cols-4)
-- Lightbox expansion on click
-- File type indicators for PDFs
-
-**Franchisor Portal:**
-- Profile header: Brand banner image (full-width, h-48)
-- Supporting images: Product/location photos in masonry grid
-
-## Animations
-**Minimal Motion:**
-- Hover states: Subtle scale (scale-105) or shadow transitions
-- Loading: Skeleton screens for data-heavy sections, simple spinner for actions
-- Transitions: 200ms duration for most interactions
-- No scroll-triggered animations or complex motion
+### CTA Sections
+- Full-width primary background
+- Gradient overlay with grain texture
+- Decorative circles/geometric shapes
+- Centered content with max-w-4xl
 
 ## Accessibility
 - All interactive elements: Minimum 44x44px touch target
-- Form validation: Inline error messages below fields
+- Form validation: Inline error messages
 - Color contrast: All text meets WCAG AA standards
-- Focus indicators: Visible focus rings on all interactive elements
-- Skip navigation link for keyboard users
+- Focus indicators: ring-2 ring-accent with offset
+- Keyboard navigation support
 
-This design system prioritizes trust, data clarity, and efficient navigation across complex multi-user workflows while maintaining visual consistency with the ZeeVerify brand.
+## Key Utility Classes
+
+| Class | Purpose |
+|-------|---------|
+| `font-display` | Playfair Display headlines |
+| `data-ticker` | Monospace numbers with tabular-nums |
+| `glass-card` | Glassmorphism card effect |
+| `grain-overlay` | Subtle texture overlay |
+| `btn-glow` | Shimmer effect on buttons |
+| `headline-accent` | Gold underline on text |
+| `editorial-rule` | Magazine-style divider line |
+| `animate-fade-in-up` | Entrance animation |
+| `stagger-{1-6}` | Animation delay classes |
+
+This design system prioritizes trust, sophistication, and data clarity for franchise investment decisions while maintaining a distinctive, premium aesthetic that differentiates ZeeVerify from generic SaaS platforms.

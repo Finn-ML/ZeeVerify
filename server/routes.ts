@@ -2,7 +2,6 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated, isAdmin } from "./replitAuth";
-import { moderateContent, extractKeywords } from "./openai";
 import { insertReviewSchema, insertLeadSchema, insertSavedComparisonSchema } from "@shared/schema";
 import { randomBytes } from "crypto";
 
@@ -130,23 +129,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const reviewData = insertReviewSchema.parse({ ...req.body, userId });
 
-      // AI moderation
-      const moderation = await moderateContent(reviewData.content, reviewData.title);
-
+      // All reviews go to pending for manual moderation
       const review = await storage.createReview({
         ...reviewData,
-        status: moderation.category === "clean" ? "approved" : "pending",
-        moderationCategory: moderation.category,
-        sentiment: moderation.sentiment,
-        sentimentScore: moderation.sentimentScore.toString(),
-        aiFlags: moderation.flags,
+        status: "pending",
+        moderationCategory: "needs_review",
       });
-
-      // Extract keywords for word frequencies
-      if (moderation.category !== "rejected") {
-        const keywords = await extractKeywords(reviewData.content);
-        // Store keywords would go here
-      }
 
       res.status(201).json(review);
     } catch (error) {

@@ -11,7 +11,7 @@ export default {
         sm: ".1875rem", /* 3px */
       },
       colors: {
-        // Flat / base colors (regular buttons)
+        // Core colors
         background: "hsl(var(--background) / <alpha-value>)",
         foreground: "hsl(var(--foreground) / <alpha-value>)",
         border: "hsl(var(--border) / <alpha-value>)",
@@ -51,6 +51,10 @@ export default {
           foreground: "hsl(var(--destructive-foreground) / <alpha-value>)",
           border: "var(--destructive-border)",
         },
+        success: {
+          DEFAULT: "hsl(var(--success) / <alpha-value>)",
+          foreground: "hsl(var(--success-foreground) / <alpha-value>)",
+        },
         ring: "hsl(var(--ring) / <alpha-value>)",
         chart: {
           "1": "hsl(var(--chart-1) / <alpha-value>)",
@@ -86,6 +90,19 @@ export default {
         sans: ["var(--font-sans)"],
         serif: ["var(--font-serif)"],
         mono: ["var(--font-mono)"],
+        display: ["var(--font-display)"],
+      },
+      boxShadow: {
+        "2xs": "var(--shadow-2xs)",
+        xs: "var(--shadow-xs)",
+        sm: "var(--shadow-sm)",
+        DEFAULT: "var(--shadow)",
+        md: "var(--shadow-md)",
+        lg: "var(--shadow-lg)",
+        xl: "var(--shadow-xl)",
+        "2xl": "var(--shadow-2xl)",
+        glow: "0 0 20px hsl(var(--accent) / 0.3)",
+        "glow-lg": "0 0 40px hsl(var(--accent) / 0.4)",
       },
       keyframes: {
         "accordion-down": {
@@ -96,10 +113,60 @@ export default {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        "fade-in-up": {
+          from: { opacity: "0", transform: "translateY(20px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
+        "fade-in": {
+          from: { opacity: "0" },
+          to: { opacity: "1" },
+        },
+        "slide-in-right": {
+          from: { opacity: "0", transform: "translateX(20px)" },
+          to: { opacity: "1", transform: "translateX(0)" },
+        },
+        "slide-in-left": {
+          from: { opacity: "0", transform: "translateX(-20px)" },
+          to: { opacity: "1", transform: "translateX(0)" },
+        },
+        float: {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-10px)" },
+        },
+        "pulse-glow": {
+          "0%, 100%": { boxShadow: "0 0 0 0 hsl(var(--accent) / 0.4)" },
+          "50%": { boxShadow: "0 0 20px 5px hsl(var(--accent) / 0.2)" },
+        },
+        shimmer: {
+          "0%": { backgroundPosition: "-200% 0" },
+          "100%": { backgroundPosition: "200% 0" },
+        },
+        "scale-in": {
+          from: { opacity: "0", transform: "scale(0.95)" },
+          to: { opacity: "1", transform: "scale(1)" },
+        },
+        "rotate-in": {
+          from: { opacity: "0", transform: "rotate(-5deg) scale(0.95)" },
+          to: { opacity: "1", transform: "rotate(0) scale(1)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "fade-in-up": "fade-in-up 0.6s ease-out forwards",
+        "fade-in": "fade-in 0.5s ease-out forwards",
+        "slide-in-right": "slide-in-right 0.5s ease-out forwards",
+        "slide-in-left": "slide-in-left 0.5s ease-out forwards",
+        float: "float 6s ease-in-out infinite",
+        "pulse-glow": "pulse-glow 2s ease-in-out infinite",
+        shimmer: "shimmer 2s infinite",
+        "scale-in": "scale-in 0.4s ease-out forwards",
+        "rotate-in": "rotate-in 0.5s ease-out forwards",
+      },
+      backgroundImage: {
+        "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
+        "gradient-conic": "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
+        "gradient-mesh": "radial-gradient(at 40% 20%, hsl(var(--accent) / 0.15) 0px, transparent 50%), radial-gradient(at 80% 0%, hsl(var(--primary) / 0.1) 0px, transparent 50%), radial-gradient(at 0% 50%, hsl(var(--accent) / 0.1) 0px, transparent 50%)",
       },
     },
   },
