@@ -5,7 +5,11 @@
       "Bash(fold:*)",
       "Bash(python3:*)",
       "Bash(node -e:*)",
-      "Bash(npm uninstall:*)"
+      "Bash(npm uninstall:*)",
+      "Bash(git push:*)",
+      "SlashCommand(/bmad:bmm:workflows:create-story)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)"
     ],
     "deny": [],
     "ask": []

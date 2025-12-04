@@ -43,10 +43,10 @@ development_status:
   # Dependencies: None (foundation epic)
   # FRs: FR-4.3.1, FR-4.3.2, FR-4.3.8
   # ============================================
-  epic-1: backlog
-  1-1-postmark-email-service-setup: backlog
-  1-2-base-email-template-system: backlog
-  1-3-email-template-variants: backlog
+  epic-1: in-progress
+  1-1-postmark-email-service-setup: ready-for-dev
+  1-2-base-email-template-system: ready-for-dev
+  1-3-email-template-variants: ready-for-dev
   epic-1-retrospective: optional
 
   # ============================================
@@ -54,13 +54,13 @@ development_status:
   # Dependencies: Epic 1 (Email Infrastructure)
   # FRs: FR-4.1.1-7, FR-4.3.3, FR-4.3.4
   # ============================================
-  epic-2: backlog
-  2-1-user-schema-authentication-columns: backlog
-  2-2-user-registration: backlog
-  2-3-user-login: backlog
-  2-4-email-verification: backlog
-  2-5-password-reset-flow: backlog
-  2-6-remove-replit-oidc-authentication: backlog
+  epic-2: in-progress
+  2-1-user-schema-authentication-columns: ready-for-dev
+  2-2-user-registration: ready-for-dev
+  2-3-user-login: ready-for-dev
+  2-4-email-verification: ready-for-dev
+  2-5-password-reset-flow: ready-for-dev
+  2-6-remove-replit-oidc-authentication: ready-for-dev
   epic-2-retrospective: optional
 
   # ============================================
@@ -68,11 +68,11 @@ development_status:
   # Dependencies: Epic 2 (Authentication)
   # FRs: FR-4.2.1-6
   # ============================================
-  epic-3: backlog
-  3-1-profile-settings-page: backlog
-  3-2-email-change: backlog
-  3-3-password-change: backlog
-  3-4-account-deletion: backlog
+  epic-3: in-progress
+  3-1-profile-settings-page: ready-for-dev
+  3-2-email-change: ready-for-dev
+  3-3-password-change: ready-for-dev
+  3-4-account-deletion: ready-for-dev
   epic-3-retrospective: optional
 
   # ============================================
@@ -80,12 +80,12 @@ development_status:
   # Dependencies: Epic 2 (Authentication)
   # FRs: FR-4.5.1, FR-4.5.2, FR-4.5.9, FR-4.10.1-8
   # ============================================
-  epic-4: backlog
-  4-1-stripe-service-setup: backlog
-  4-2-brand-claim-checkout-flow: backlog
-  4-3-stripe-webhook-handler: backlog
-  4-4-verified-badge-display: backlog
-  4-5-payment-success-page: backlog
+  epic-4: in-progress
+  4-1-stripe-service-setup: ready-for-dev
+  4-2-brand-claim-checkout-flow: ready-for-dev
+  4-3-stripe-webhook-handler: ready-for-dev
+  4-4-verified-badge-display: ready-for-dev
+  4-5-payment-success-page: ready-for-dev
   epic-4-retrospective: optional
 
   # ============================================
@@ -93,11 +93,11 @@ development_status:
   # Dependencies: Epic 1 (Email), Epic 2 (Auth)
   # FRs: FR-4.3.5-7, FR-4.9.7, FR-4.10.7
   # ============================================
-  epic-5: backlog
-  5-1-new-review-notification-for-franchisors: backlog
-  5-2-franchisor-response-notification: backlog
-  5-3-moderation-outcome-notification: backlog
-  5-4-payment-confirmation-email: backlog
+  epic-5: in-progress
+  5-1-new-review-notification-for-franchisors: ready-for-dev
+  5-2-franchisor-response-notification: ready-for-dev
+  5-3-moderation-outcome-notification: ready-for-dev
+  5-4-payment-confirmation-email: ready-for-dev
   epic-5-retrospective: optional
 
   # ============================================
@@ -105,8 +105,8 @@ development_status:
   # Dependencies: Epic 4 (Stripe), Epic 2 (Auth)
   # FRs: FR-4.7.5, FR-4.8.7, FR-4.8.9
   # ============================================
-  epic-6: backlog
-  6-1-admin-payment-dashboard: backlog
-  6-2-admin-password-reset-for-users: backlog
-  6-3-admin-audit-logging: backlog
+  epic-6: in-progress
+  6-1-admin-payment-dashboard: ready-for-dev
+  6-2-admin-password-reset-for-users: ready-for-dev
+  6-3-admin-audit-logging: ready-for-dev
   epic-6-retrospective: optional
