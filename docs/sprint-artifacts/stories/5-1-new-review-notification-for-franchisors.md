@@ -4,7 +4,7 @@
 - **Epic:** 5 - Notification System
 - **Story ID:** 5.1
 - **Title:** New Review Notification for Franchisors
-- **Status:** ready-for-dev
+- **Status:** Ready for Review
 - **Dependencies:** Epic 1 complete, Epic 2 complete
 
 ## User Story
@@ -155,14 +155,14 @@ function shouldSendNotification(
 ```
 
 ## Definition of Done
-- [ ] `sendNewReviewNotification()` method added to EmailService
-- [ ] Review approval route sends notification
-- [ ] Only sends to claimed brand franchisors
-- [ ] Respects notification preferences
-- [ ] Email contains brand name, summary, rating
-- [ ] Email contains link to respond
-- [ ] Star rating displayed visually
-- [ ] TypeScript compiles without errors
+- [x] `sendNewReviewNotification()` method added to EmailService
+- [x] Review approval route sends notification
+- [x] Only sends to claimed brand franchisors
+- [x] Respects notification preferences
+- [x] Email contains brand name, summary, rating
+- [x] Email contains link to respond
+- [x] Star rating displayed visually
+- [x] TypeScript compiles without errors
 
 ## Test Scenarios
 1. **Claimed Brand, Notifications On:** Email sent
@@ -170,3 +170,29 @@ function shouldSendNotification(
 3. **Unclaimed Brand:** No email
 4. **Email Contains:** Brand name, summary, rating, link
 5. **Long Review:** Truncated to 100 chars
+
+---
+
+## Dev Agent Record
+
+### Implementation Notes
+- Added `sendNewReviewNotification()` method to `server/services/email.ts:203-239`
+- Modified `/api/admin/reviews/:id/moderate` route in `server/routes.ts:644-687`
+- Integrated with existing moderation flow - notification triggered on `action === "approve"`
+- Brand claim check: `brand.isClaimed && brand.claimedById`
+- Notification preference check: `prefs?.reviewResponses !== false` (defaults to enabled)
+- Email includes star rating visual (★☆), truncated summary (100 chars), respond button
+
+### Technical Decisions
+- Used existing `moderateReview` endpoint instead of creating separate approve endpoint
+- Notification fires synchronously within the request to ensure delivery tracking
+- Review summary truncation applied at method level with XSS-safe escaping
+
+## File List
+- `server/services/email.ts` - Added sendNewReviewNotification method
+- `server/routes.ts` - Modified moderation route to send franchisor notification
+
+## Change Log
+| Date | Change | Author |
+|------|--------|--------|
+| 2025-12-04 | Implemented new review notification for franchisors | Dev Agent |

@@ -192,6 +192,53 @@ export class EmailService {
   }
 
   /**
+   * Send notification to franchisor when new review is approved for their brand
+   * @param to - Franchisor's email address
+   * @param brandName - Name of the brand
+   * @param reviewSummary - Review content (will be truncated to 100 chars)
+   * @param rating - Overall rating (1-5)
+   * @param reviewId - Review ID for linking
+   * @returns true on success, false on failure
+   */
+  async sendNewReviewNotification(
+    to: string,
+    brandName: string,
+    reviewSummary: string,
+    rating: number,
+    reviewId: number
+  ): Promise<boolean> {
+    const reviewUrl = `${process.env.BASE_URL || 'http://localhost:5000'}/franchisor/reviews/${reviewId}`;
+    const safeBrandName = this.escapeHtml(brandName);
+    const safeSummary = this.escapeHtml(reviewSummary.slice(0, 100));
+
+    // Star rating display
+    const stars = '★'.repeat(Math.round(rating)) + '☆'.repeat(5 - Math.round(rating));
+
+    const content = `
+      <h2 style="color: #1a1f36; margin-bottom: 20px;">New Review for ${safeBrandName}</h2>
+
+      <div style="background-color: #f9f9f9; border-radius: 8px; padding: 20px; margin: 20px 0;">
+        <div style="color: #c9a962; font-size: 20px; margin-bottom: 10px;">${stars}</div>
+        <p style="color: #333; font-style: italic; margin: 0;">"${safeSummary}${reviewSummary.length > 100 ? '...' : ''}"</p>
+      </div>
+
+      <p>A new review has been published for your brand. Responding to reviews shows franchisees that you value their feedback.</p>
+
+      <p style="text-align: center; margin: 30px 0;">
+        <a href="${reviewUrl}" style="background-color: #c9a962; color: #1a1f36; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
+          View &amp; Respond
+        </a>
+      </p>
+    `;
+
+    return this.sendEmail(
+      to,
+      `New review for ${safeBrandName}`,
+      this.wrapInTemplate(content, true)
+    );
+  }
+
+  /**
    * Send welcome email to new user
    * @param to - Recipient email address
    * @param firstName - User's first name

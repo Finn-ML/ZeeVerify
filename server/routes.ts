@@ -647,7 +647,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { action, notes } = req.body;
       const moderatorId = req.user.id;
 
+      // Get review before moderation to access brandId and content
+      const reviewBefore = await storage.getReview(id);
+      if (!reviewBefore) {
+        return res.status(404).json({ message: "Review not found" });
+      }
+
       const review = await storage.moderateReview(id, action, moderatorId, notes);
+
+      // Send notification to franchisor on approval if brand is claimed
+      if (action === "approve" && reviewBefore.brandId) {
+        const brand = await storage.getBrand(reviewBefore.brandId);
+
+        if (brand?.isClaimed && brand.claimedById) {
+          const franchisor = await storage.getUser(brand.claimedById);
+
+          if (franchisor && franchisor.email) {
+            // Check notification preferences - default to true if not explicitly false
+            const prefs = franchisor.notificationPreferences as { reviewResponses?: boolean } | null;
+
+            if (prefs?.reviewResponses !== false) {
+              await emailService.sendNewReviewNotification(
+                franchisor.email,
+                brand.name,
+                reviewBefore.content || '',
+                reviewBefore.overallRating,
+                parseInt(id)
+              );
+            }
+          }
+        }
+      }
+
       res.json(review);
     } catch (error) {
       console.error("Error moderating review:", error);
