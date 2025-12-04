@@ -436,6 +436,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status: "pending",
       });
 
+      // Send notification to review author about the response
+      if (review.userId) {
+        const author = await storage.getUser(review.userId);
+        const brand = review.brandId ? await storage.getBrand(review.brandId) : null;
+
+        if (author && author.email && brand) {
+          // Check notification preferences - default to true if not explicitly false
+          const prefs = author.notificationPreferences as { reviewResponses?: boolean } | null;
+
+          if (prefs?.reviewResponses !== false) {
+            await emailService.sendResponseNotification(
+              author.email,
+              brand.name,
+              content,
+              parseInt(id)
+            );
+          }
+        }
+      }
+
       res.status(201).json(response);
     } catch (error) {
       console.error("Error creating response:", error);

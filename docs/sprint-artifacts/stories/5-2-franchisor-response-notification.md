@@ -4,7 +4,7 @@
 - **Epic:** 5 - Notification System
 - **Story ID:** 5.2
 - **Title:** Franchisor Response Notification
-- **Status:** ready-for-dev
+- **Status:** Ready for Review
 - **Dependencies:** Epic 1 complete, Epic 2 complete
 
 ## User Story
@@ -150,13 +150,13 @@ export const reviewResponses = pgTable("review_responses", {
 ```
 
 ## Definition of Done
-- [ ] `sendResponseNotification()` method added to EmailService
-- [ ] Response submission route sends notification
-- [ ] Only sends if preferences allow
-- [ ] Email contains brand name, response preview
-- [ ] Email contains link to view response
-- [ ] Anonymity reminder included
-- [ ] TypeScript compiles without errors
+- [x] `sendResponseNotification()` method added to EmailService
+- [x] Response submission route sends notification
+- [x] Only sends if preferences allow
+- [x] Email contains brand name, response preview
+- [x] Email contains link to view response
+- [x] Anonymity reminder included
+- [x] TypeScript compiles without errors
 
 ## Test Scenarios
 1. **Notifications On:** Email sent to review author
@@ -164,3 +164,28 @@ export const reviewResponses = pgTable("review_responses", {
 3. **Email Contains:** Brand name, preview, link
 4. **Long Response:** Truncated to 100 chars
 5. **Anonymity:** Reminder that identity is protected
+
+---
+
+## Dev Agent Record
+
+### Implementation Notes
+- Added `sendResponseNotification()` method to `server/services/email.ts:249-282`
+- Modified `/api/reviews/:id/respond` route in `server/routes.ts:415-464`
+- Notification sent on response submission (before moderation approval)
+- Notification preference check: `prefs?.reviewResponses !== false` (defaults to enabled)
+- Email includes anonymity reminder, truncated preview (100 chars), view response button
+
+### Technical Decisions
+- Used existing `/api/reviews/:id/respond` endpoint - no new endpoint needed
+- Notification fires on submission rather than approval to match AC1 ("when response is submitted")
+- Note: Responses have `status: "pending"` - user may receive notification before response is visible
+
+## File List
+- `server/services/email.ts` - Added sendResponseNotification method
+- `server/routes.ts` - Modified respond route to send author notification
+
+## Change Log
+| Date | Change | Author |
+|------|--------|--------|
+| 2025-12-04 | Implemented franchisor response notification | Dev Agent |

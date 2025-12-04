@@ -239,6 +239,49 @@ export class EmailService {
   }
 
   /**
+   * Send notification to franchisee when franchisor responds to their review
+   * @param to - Review author's email address
+   * @param brandName - Name of the brand
+   * @param responsePreview - Response content (will be truncated to 100 chars)
+   * @param reviewId - Review ID for linking
+   * @returns true on success, false on failure
+   */
+  async sendResponseNotification(
+    to: string,
+    brandName: string,
+    responsePreview: string,
+    reviewId: number
+  ): Promise<boolean> {
+    const reviewUrl = `${process.env.BASE_URL || 'http://localhost:5000'}/reviews/${reviewId}`;
+    const safeBrandName = this.escapeHtml(brandName);
+    const safeResponse = this.escapeHtml(responsePreview.slice(0, 100));
+
+    const content = `
+      <h2 style="color: #1a1f36; margin-bottom: 20px;">Response from ${safeBrandName}</h2>
+
+      <p>The franchisor of ${safeBrandName} has responded to your review:</p>
+
+      <div style="background-color: #f9f9f9; border-left: 4px solid #c9a962; padding: 15px 20px; margin: 20px 0;">
+        <p style="color: #333; font-style: italic; margin: 0;">"${safeResponse}${responsePreview.length > 100 ? '...' : ''}"</p>
+      </div>
+
+      <p style="text-align: center; margin: 30px 0;">
+        <a href="${reviewUrl}" style="background-color: #c9a962; color: #1a1f36; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
+          View Full Response
+        </a>
+      </p>
+
+      <p style="font-size: 14px; color: #666;">Your identity remains anonymous. The franchisor cannot see who wrote the review.</p>
+    `;
+
+    return this.sendEmail(
+      to,
+      `${safeBrandName} responded to your review`,
+      this.wrapInTemplate(content, true)
+    );
+  }
+
+  /**
    * Send welcome email to new user
    * @param to - Recipient email address
    * @param firstName - User's first name
