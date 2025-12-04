@@ -282,6 +282,91 @@ export class EmailService {
   }
 
   /**
+   * Send notification to review author when their review is approved
+   * @param to - Review author's email address
+   * @param brandName - Name of the brand
+   * @param reviewId - Review ID for linking
+   * @returns true on success, false on failure
+   */
+  async sendReviewApprovedEmail(
+    to: string,
+    brandName: string,
+    reviewId: number
+  ): Promise<boolean> {
+    const reviewUrl = `${process.env.BASE_URL || 'http://localhost:5000'}/reviews/${reviewId}`;
+    const safeBrandName = this.escapeHtml(brandName);
+
+    const content = `
+      <h2 style="color: #1a1f36; margin-bottom: 20px;">Your Review Has Been Published!</h2>
+
+      <p>Great news! Your review for <strong>${safeBrandName}</strong> has been approved and is now live on ZeeVerify.</p>
+
+      <p>Thank you for sharing your franchise experience. Your feedback helps prospective franchise buyers make informed decisions.</p>
+
+      <p style="text-align: center; margin: 30px 0;">
+        <a href="${reviewUrl}" style="background-color: #c9a962; color: #1a1f36; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
+          View Your Review
+        </a>
+      </p>
+
+      <p style="font-size: 14px; color: #666;">Remember, your identity is protected. The franchisor and other users cannot see who wrote the review.</p>
+    `;
+
+    return this.sendEmail(
+      to,
+      'Your review has been published',
+      this.wrapInTemplate(content, true)
+    );
+  }
+
+  /**
+   * Send notification to review author when their review is rejected
+   * @param to - Review author's email address
+   * @param brandName - Name of the brand
+   * @param reason - Rejection reason provided by moderator
+   * @returns true on success, false on failure
+   */
+  async sendReviewRejectedEmail(
+    to: string,
+    brandName: string,
+    reason: string
+  ): Promise<boolean> {
+    const baseUrl = process.env.BASE_URL || 'http://localhost:5000';
+    const safeBrandName = this.escapeHtml(brandName);
+    const safeReason = this.escapeHtml(reason);
+
+    const content = `
+      <h2 style="color: #1a1f36; margin-bottom: 20px;">Update on Your Review Submission</h2>
+
+      <p>Thank you for submitting a review for <strong>${safeBrandName}</strong>.</p>
+
+      <p>Unfortunately, we were unable to publish your review at this time. Here's why:</p>
+
+      <div style="background-color: #fef2f2; border-left: 4px solid #ef4444; padding: 15px 20px; margin: 20px 0;">
+        <p style="color: #991b1b; margin: 0;"><strong>Reason:</strong> ${safeReason}</p>
+      </div>
+
+      <h3 style="color: #1a1f36; margin-top: 30px;">What You Can Do</h3>
+
+      <p>You're welcome to submit a new review that addresses the feedback above. We value your input and want to ensure all reviews meet our community guidelines.</p>
+
+      <p style="text-align: center; margin: 30px 0;">
+        <a href="${baseUrl}/franchisee/reviews/new" style="background-color: #c9a962; color: #1a1f36; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
+          Submit New Review
+        </a>
+      </p>
+
+      <p style="font-size: 14px; color: #666;">If you believe this decision was made in error, please contact our support team.</p>
+    `;
+
+    return this.sendEmail(
+      to,
+      'Update on your review submission',
+      this.wrapInTemplate(content, true)
+    );
+  }
+
+  /**
    * Send welcome email to new user
    * @param to - Recipient email address
    * @param firstName - User's first name

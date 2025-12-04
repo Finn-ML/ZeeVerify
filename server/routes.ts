@@ -675,15 +675,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const review = await storage.moderateReview(id, action, moderatorId, notes);
 
-      // Send notification to franchisor on approval if brand is claimed
-      if (action === "approve" && reviewBefore.brandId) {
-        const brand = await storage.getBrand(reviewBefore.brandId);
+      // Get brand info for notifications
+      const brand = reviewBefore.brandId ? await storage.getBrand(reviewBefore.brandId) : null;
 
+      // Send notifications based on action
+      if (action === "approve") {
+        // Notify franchisor if brand is claimed
         if (brand?.isClaimed && brand.claimedById) {
           const franchisor = await storage.getUser(brand.claimedById);
 
           if (franchisor && franchisor.email) {
-            // Check notification preferences - default to true if not explicitly false
             const prefs = franchisor.notificationPreferences as { reviewResponses?: boolean } | null;
 
             if (prefs?.reviewResponses !== false) {
@@ -693,6 +694,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 reviewBefore.content || '',
                 reviewBefore.overallRating,
                 parseInt(id)
+              );
+            }
+          }
+        }
+
+        // Notify review author of approval
+        if (reviewBefore.userId) {
+          const author = await storage.getUser(reviewBefore.userId);
+
+          if (author && author.email) {
+            const prefs = author.notificationPreferences as { moderationOutcomes?: boolean } | null;
+
+            if (prefs?.moderationOutcomes !== false) {
+              await emailService.sendReviewApprovedEmail(
+                author.email,
+                brand?.name || 'Unknown Brand',
+                parseInt(id)
+              );
+            }
+          }
+        }
+      } else if (action === "reject") {
+        // Notify review author of rejection
+        if (reviewBefore.userId) {
+          const author = await storage.getUser(reviewBefore.userId);
+
+          if (author && author.email) {
+            const prefs = author.notificationPreferences as { moderationOutcomes?: boolean } | null;
+
+            if (prefs?.moderationOutcomes !== false) {
+              await emailService.sendReviewRejectedEmail(
+                author.email,
+                brand?.name || 'Unknown Brand',
+                notes || 'Your review did not meet our community guidelines.'
               );
             }
           }
