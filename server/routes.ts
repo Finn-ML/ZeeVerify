@@ -113,6 +113,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           lastName: user.lastName,
           role: user.role,
           emailVerified: user.emailVerified,
+          isVerified: user.isVerified,
+          profileImageUrl: user.profileImageUrl,
+          notificationPreferences: user.notificationPreferences || {
+            reviewResponses: true,
+            moderationOutcomes: true,
+            marketingEmails: false,
+          },
         },
       });
     } else {
@@ -315,16 +322,194 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Account deletion with soft delete
   app.delete("/api/users/me", isAuthenticated, async (req: any, res) => {
     try {
+      const { password } = req.body;
       const userId = req.user.id;
-      await storage.deleteUser(userId);
-      req.logout(() => {
-        res.json({ message: "Account deleted" });
+
+      if (!password) {
+        return res.status(400).json({ message: "Password is required" });
+      }
+
+      // Get current user
+      const user = await storage.getUser(userId);
+      if (!user || !user.passwordHash) {
+        return res.status(400).json({ message: "Invalid account state" });
+      }
+
+      // Verify password
+      const isValid = await bcrypt.compare(password, user.passwordHash);
+      if (!isValid) {
+        return res.status(400).json({ message: "Password incorrect" });
+      }
+
+      // Soft delete user (set deletedAt, anonymize PII)
+      await storage.softDeleteUser(userId);
+
+      // Release brand claims
+      await storage.releaseUserBrandClaims(userId);
+
+      // Invalidate all sessions
+      await storage.invalidateUserSessions(userId);
+
+      // Destroy current session
+      req.logout((err: any) => {
+        if (err) {
+          console.error("Logout error during deletion:", err);
+        }
+        req.session.destroy((err: any) => {
+          if (err) {
+            console.error("Session destroy error:", err);
+          }
+          res.json({ message: "Account deleted successfully" });
+        });
       });
     } catch (error) {
       console.error("Error deleting user:", error);
       res.status(500).json({ message: "Failed to delete user" });
+    }
+  });
+
+  // Email change routes
+  app.post("/api/user/change-email", isAuthenticated, async (req: any, res) => {
+    try {
+      const { newEmail, currentPassword } = req.body;
+      const userId = req.user.id;
+
+      if (!newEmail || !currentPassword) {
+        return res.status(400).json({ message: "New email and current password are required" });
+      }
+
+      // Email format validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(newEmail)) {
+        return res.status(400).json({ message: "Invalid email format" });
+      }
+
+      // Get current user
+      const user = await storage.getUser(userId);
+      if (!user || !user.passwordHash) {
+        return res.status(400).json({ message: "Invalid account state" });
+      }
+
+      // Check if same as current email
+      if (user.email === newEmail) {
+        return res.status(400).json({ message: "New email must be different from current email" });
+      }
+
+      // Verify current password
+      const isValid = await bcrypt.compare(currentPassword, user.passwordHash);
+      if (!isValid) {
+        return res.status(400).json({ message: "Current password is incorrect" });
+      }
+
+      // Check if email already exists
+      const existing = await storage.getUserByEmail(newEmail);
+      if (existing) {
+        return res.status(400).json({ message: "Email already in use" });
+      }
+
+      // Generate verification token
+      const token = randomBytes(32).toString("base64url");
+      const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+      // Store pending email change
+      await storage.setPendingEmail(userId, newEmail, token, expires);
+
+      // Send verification to new email
+      await emailService.sendEmailChangeVerification(newEmail, token);
+
+      res.json({ message: "Verification email sent", newEmail });
+    } catch (error) {
+      console.error("Error changing email:", error);
+      res.status(500).json({ message: "Failed to initiate email change" });
+    }
+  });
+
+  app.post("/api/user/verify-new-email", async (req, res) => {
+    try {
+      const { token } = req.body;
+
+      if (!token) {
+        return res.status(400).json({ message: "Token is required" });
+      }
+
+      const user = await storage.getUserByPendingEmailToken(token);
+      if (!user || !user.pendingEmail) {
+        return res.status(400).json({ message: "Invalid or expired token" });
+      }
+
+      if (user.pendingEmailExpires && new Date() > user.pendingEmailExpires) {
+        return res.status(400).json({ message: "Token expired" });
+      }
+
+      const oldEmail = user.email;
+      const newEmail = user.pendingEmail;
+
+      // Update email
+      await storage.confirmEmailChange(user.id, newEmail);
+
+      // Notify old email (security)
+      if (oldEmail) {
+        await emailService.sendEmailChangedNotification(oldEmail, newEmail);
+      }
+
+      res.json({ message: "Email changed successfully" });
+    } catch (error) {
+      console.error("Error verifying new email:", error);
+      res.status(500).json({ message: "Failed to verify email change" });
+    }
+  });
+
+  // Password change route
+  app.post("/api/user/change-password", isAuthenticated, async (req: any, res) => {
+    try {
+      const { currentPassword, newPassword } = req.body;
+      const userId = req.user.id;
+
+      if (!currentPassword || !newPassword) {
+        return res.status(400).json({ message: "Current and new password are required" });
+      }
+
+      // Get current user
+      const user = await storage.getUser(userId);
+      if (!user || !user.passwordHash) {
+        return res.status(400).json({ message: "Invalid account state" });
+      }
+
+      // Verify current password
+      const isValid = await bcrypt.compare(currentPassword, user.passwordHash);
+      if (!isValid) {
+        return res.status(400).json({ message: "Current password is incorrect" });
+      }
+
+      // Validate new password strength
+      const hasUppercase = /[A-Z]/.test(newPassword);
+      const hasNumber = /[0-9]/.test(newPassword);
+      const hasSpecial = /[^A-Za-z0-9]/.test(newPassword);
+      const hasMinLength = newPassword.length >= 8;
+
+      if (!hasMinLength || !hasUppercase || !hasNumber || !hasSpecial) {
+        return res.status(400).json({
+          message: "Password must be at least 8 characters with 1 uppercase, 1 number, and 1 special character"
+        });
+      }
+
+      // Ensure new password is different
+      const isSame = await bcrypt.compare(newPassword, user.passwordHash);
+      if (isSame) {
+        return res.status(400).json({ message: "New password must be different from current password" });
+      }
+
+      // Hash and save new password
+      const newHash = await bcrypt.hash(newPassword, 12);
+      await storage.updatePassword(userId, newHash);
+
+      res.json({ message: "Password changed successfully" });
+    } catch (error) {
+      console.error("Password change error:", error);
+      res.status(500).json({ message: "Failed to change password" });
     }
   });
 

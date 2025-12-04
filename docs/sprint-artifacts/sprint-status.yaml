@@ -69,10 +69,10 @@ development_status:
   # FRs: FR-4.2.1-6
   # ============================================
   epic-3: in-progress
-  3-1-profile-settings-page: ready-for-dev
-  3-2-email-change: ready-for-dev
-  3-3-password-change: ready-for-dev
-  3-4-account-deletion: ready-for-dev
+  3-1-profile-settings-page: review
+  3-2-email-change: review
+  3-3-password-change: review
+  3-4-account-deletion: review
   epic-3-retrospective: optional
 
   # ============================================

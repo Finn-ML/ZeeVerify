@@ -223,6 +223,49 @@ export class EmailService {
     // Don't include unsubscribe for welcome email until notification preferences are implemented
     return this.sendEmail(to, `Welcome to ZeeVerify, ${safeFirstName}!`, this.wrapInTemplate(content, false));
   }
+
+  /**
+   * Send verification email for email address change
+   * @param to - New email address to verify
+   * @param token - Verification token
+   * @returns true on success, false on failure
+   */
+  async sendEmailChangeVerification(to: string, token: string): Promise<boolean> {
+    const verifyUrl = `${process.env.BASE_URL || 'http://localhost:5000'}/verify-new-email?token=${token}`;
+
+    const content = `
+      <h2 style="color: #1a1f36; margin-bottom: 20px;">Verify Your New Email Address</h2>
+      <p>You requested to change your email address on ZeeVerify. Click the button below to confirm this as your new email address.</p>
+      <p style="text-align: center; margin: 30px 0;">
+        <a href="${verifyUrl}" style="background-color: #c9a962; color: #1a1f36; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
+          Verify New Email
+        </a>
+      </p>
+      <p style="font-size: 14px; color: #666;">This link will expire in 24 hours.</p>
+      <p style="font-size: 14px; color: #666;">If you didn't request this change, please ignore this email and your current email address will remain unchanged.</p>
+    `;
+
+    return this.sendEmail(to, 'Verify your new email address', this.wrapInTemplate(content, false));
+  }
+
+  /**
+   * Send notification about email address change to old email
+   * @param oldEmail - Previous email address
+   * @param newEmail - New email address
+   * @returns true on success, false on failure
+   */
+  async sendEmailChangedNotification(oldEmail: string, newEmail: string): Promise<boolean> {
+    const safeNewEmail = this.escapeHtml(newEmail);
+
+    const content = `
+      <h2 style="color: #1a1f36; margin-bottom: 20px;">Your Email Address Was Changed</h2>
+      <p>The email address for your ZeeVerify account was changed to <strong>${safeNewEmail}</strong>.</p>
+      <p style="font-size: 14px; color: #666; margin-top: 20px;">If you made this change, no further action is needed.</p>
+      <p style="font-size: 14px; color: #cc0000;"><strong>If you did not make this change, please contact support immediately.</strong></p>
+    `;
+
+    return this.sendEmail(oldEmail, 'Your ZeeVerify email was changed', this.wrapInTemplate(content, false));
+  }
 }
 
 // Singleton instance for use across the application

@@ -49,6 +49,14 @@ export interface IStorage {
   clearPasswordResetToken(userId: string): Promise<void>;
   updatePassword(userId: string, passwordHash: string): Promise<void>;
   invalidateUserSessions(userId: string): Promise<void>;
+  // Email change operations
+  setPendingEmail(userId: string, email: string, token: string, expires: Date): Promise<void>;
+  getUserByPendingEmailToken(token: string): Promise<User | undefined>;
+  confirmEmailChange(userId: string, newEmail: string): Promise<void>;
+  // Account deletion operations
+  softDeleteUser(userId: string): Promise<void>;
+  anonymizeUserReviews(userId: string): Promise<void>;
+  releaseUserBrandClaims(userId: string): Promise<void>;
 
   // Brand operations
   getBrand(id: string): Promise<Brand | undefined>;
@@ -196,6 +204,78 @@ export class DatabaseStorage implements IStorage {
     await db.delete(sessions).where(
       sql`sess->'passport'->>'user' = ${userId}`
     );
+  }
+
+  async setPendingEmail(userId: string, email: string, token: string, expires: Date): Promise<void> {
+    await db
+      .update(users)
+      .set({
+        pendingEmail: email,
+        pendingEmailToken: token,
+        pendingEmailExpires: expires,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId));
+  }
+
+  async getUserByPendingEmailToken(token: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.pendingEmailToken, token));
+    return user;
+  }
+
+  async confirmEmailChange(userId: string, newEmail: string): Promise<void> {
+    await db
+      .update(users)
+      .set({
+        email: newEmail,
+        pendingEmail: null,
+        pendingEmailToken: null,
+        pendingEmailExpires: null,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId));
+  }
+
+  async softDeleteUser(userId: string): Promise<void> {
+    // Soft delete: set deletedAt and anonymize PII
+    await db
+      .update(users)
+      .set({
+        deletedAt: new Date(),
+        email: `deleted_${userId}@deleted.zeeverify.com`,
+        firstName: null,
+        lastName: null,
+        profileImageUrl: null,
+        passwordHash: null,
+        emailVerificationToken: null,
+        emailVerificationExpires: null,
+        passwordResetToken: null,
+        passwordResetExpires: null,
+        pendingEmail: null,
+        pendingEmailToken: null,
+        pendingEmailExpires: null,
+        notificationPreferences: {},
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId));
+  }
+
+  async anonymizeUserReviews(userId: string): Promise<void> {
+    // Reviews are preserved but author info is anonymized
+    // Since reviews table links to userId, the display will show "Former User" when user is deleted
+    // No update needed here as we check deletedAt in the user lookup
+  }
+
+  async releaseUserBrandClaims(userId: string): Promise<void> {
+    // Release any brands claimed by this user
+    await db
+      .update(brands)
+      .set({
+        isClaimed: false,
+        claimedById: null,
+        updatedAt: new Date(),
+      })
+      .where(eq(brands.claimedById, userId));
   }
 
   async createUser(userData: Partial<UpsertUser>): Promise<User> {

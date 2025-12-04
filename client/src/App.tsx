@@ -17,6 +17,7 @@ import AdminDashboard from "@/pages/admin";
 import Register from "@/pages/register";
 import VerifyEmailSent from "@/pages/verify-email-sent";
 import VerifyEmail from "@/pages/verify-email";
+import VerifyNewEmail from "@/pages/verify-new-email";
 import Login from "@/pages/login";
 import ForgotPassword from "@/pages/forgot-password";
 import ResetPassword from "@/pages/reset-password";
@@ -31,6 +32,7 @@ function Router() {
       <Route path="/login" component={Login} />
       <Route path="/verify-email-sent" component={VerifyEmailSent} />
       <Route path="/verify-email" component={VerifyEmail} />
+      <Route path="/verify-new-email" component={VerifyNewEmail} />
       <Route path="/forgot-password" component={ForgotPassword} />
       <Route path="/reset-password" component={ResetPassword} />
       <Route path="/directory" component={Directory} />

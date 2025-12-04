@@ -81,6 +81,12 @@ export const users = pgTable("users", {
   emailVerificationExpires: timestamp("email_verification_expires"),
   passwordResetToken: varchar("password_reset_token", { length: 255 }),
   passwordResetExpires: timestamp("password_reset_expires"),
+  // Email change columns
+  pendingEmail: varchar("pending_email", { length: 255 }),
+  pendingEmailToken: varchar("pending_email_token", { length: 255 }),
+  pendingEmailExpires: timestamp("pending_email_expires"),
+  // Soft delete column
+  deletedAt: timestamp("deleted_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

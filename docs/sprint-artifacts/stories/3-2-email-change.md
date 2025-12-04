@@ -4,7 +4,7 @@
 - **Epic:** 3 - Account Management
 - **Story ID:** 3.2
 - **Title:** Email Change
-- **Status:** ready-for-dev
+- **Status:** Ready for Review
 - **Dependencies:** Story 3.1
 
 ## User Story
@@ -217,15 +217,42 @@ async sendEmailChangedNotification(oldEmail: string, newEmail: string): Promise<
 ```
 
 ## Definition of Done
-- [ ] Change email dialog component created
-- [ ] `POST /api/user/change-email` route added
-- [ ] `POST /api/user/verify-new-email` route added
-- [ ] Pending email columns added to schema
-- [ ] Password verification implemented
-- [ ] Verification email sent to new address
-- [ ] Notification sent to old address
-- [ ] Email only changes after verification
-- [ ] TypeScript compiles without errors
+- [x] Change email dialog component created (`client/src/components/change-email-dialog.tsx`)
+- [x] `POST /api/user/change-email` route added
+- [x] `POST /api/user/verify-new-email` route added
+- [x] Pending email columns added to schema (pendingEmail, pendingEmailToken, pendingEmailExpires)
+- [x] Password verification implemented (bcrypt compare)
+- [x] Verification email sent to new address (`sendEmailChangeVerification`)
+- [x] Notification sent to old address (`sendEmailChangedNotification`)
+- [x] Email only changes after verification (via `confirmEmailChange` storage method)
+- [x] TypeScript compiles without errors
+
+## Dev Agent Record
+
+### Implementation Notes
+- Created `ChangeEmailDialog` component with password confirmation
+- Added pending email columns to users table schema
+- Added storage methods: `setPendingEmail`, `getUserByPendingEmailToken`, `confirmEmailChange`
+- Added email service methods: `sendEmailChangeVerification`, `sendEmailChangedNotification`
+- Created `verify-new-email` page for token verification
+- Integrated dialog into settings page with email field
+- Security: password required, email uniqueness check, token expiration (24h)
+
+### Files Created
+- `client/src/components/change-email-dialog.tsx`
+- `client/src/pages/verify-new-email.tsx`
+
+### Files Modified
+- `shared/schema.ts:84-87` - Added pending email columns
+- `server/storage.ts:52-55` - Added interface methods
+- `server/storage.ts:205-233` - Added implementation methods
+- `server/services/email.ts:227-268` - Added email methods
+- `server/routes.ts:338-427` - Added email change routes
+- `client/src/App.tsx:20,35` - Added route import and registration
+- `client/src/pages/settings.tsx:39,248-263` - Added dialog import and integration
+
+### Date
+2025-12-04
 
 ## Test Scenarios
 1. **Valid Request:** Verification email sent

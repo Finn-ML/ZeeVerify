@@ -4,7 +4,7 @@
 - **Epic:** 3 - Account Management
 - **Story ID:** 3.3
 - **Title:** Password Change
-- **Status:** ready-for-dev
+- **Status:** Ready for Review
 - **Dependencies:** Story 3.1
 
 ## User Story
@@ -235,15 +235,35 @@ app.post("/api/user/change-password", isAuthenticated, async (req, res) => {
 - Must be different from current password
 
 ## Definition of Done
-- [ ] Change password dialog component created
-- [ ] `POST /api/user/change-password` route added
-- [ ] Current password verification implemented
-- [ ] Password strength validation on new password
-- [ ] Confirmation password matching
-- [ ] Same password check (must be different)
-- [ ] Success toast on completion
-- [ ] Session preserved after change
-- [ ] TypeScript compiles without errors
+- [x] Change password dialog component created (`client/src/components/change-password-dialog.tsx`)
+- [x] `POST /api/user/change-password` route added
+- [x] Current password verification implemented (bcrypt compare)
+- [x] Password strength validation on new password (8+ chars, uppercase, number, special)
+- [x] Confirmation password matching (client-side validation with visual feedback)
+- [x] Same password check (must be different) - both client and server validation
+- [x] Success toast on completion
+- [x] Session preserved after change (no logout required)
+- [x] TypeScript compiles without errors
+
+## Dev Agent Record
+
+### Implementation Notes
+- Created `ChangePasswordDialog` component with real-time password validation
+- Visual password requirements checklist with CheckCircle2/XCircle icons
+- Show/hide password toggle for all three fields
+- Password requirements: min 8 chars, 1 uppercase, 1 number, 1 special character
+- Server-side validation matches client-side for security
+- Session preserved - only password hash updated, no logout triggered
+
+### Files Created
+- `client/src/components/change-password-dialog.tsx`
+
+### Files Modified
+- `server/routes.ts:429-478` - Added password change route
+- `client/src/pages/settings.tsx:40,377-395` - Added import and Password card in Security tab
+
+### Date
+2025-12-04
 
 ## Test Scenarios
 1. **Valid Change:** Password updated, toast shown
