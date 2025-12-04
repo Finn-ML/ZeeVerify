@@ -97,7 +97,7 @@ development_status:
   5-1-new-review-notification-for-franchisors: review
   5-2-franchisor-response-notification: review
   5-3-moderation-outcome-notification: review
-  5-4-payment-confirmation-email: ready-for-dev
+  5-4-payment-confirmation-email: review
   epic-5-retrospective: optional
 
   # ============================================
