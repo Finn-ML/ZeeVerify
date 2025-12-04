@@ -14,6 +14,12 @@ import Settings from "@/pages/settings";
 import FranchiseePortal from "@/pages/franchisee";
 import FranchisorPortal from "@/pages/franchisor";
 import AdminDashboard from "@/pages/admin";
+import Register from "@/pages/register";
+import VerifyEmailSent from "@/pages/verify-email-sent";
+import VerifyEmail from "@/pages/verify-email";
+import Login from "@/pages/login";
+import ForgotPassword from "@/pages/forgot-password";
+import ResetPassword from "@/pages/reset-password";
 
 function Router() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -21,6 +27,12 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={isLoading || !isAuthenticated ? Landing : Directory} />
+      <Route path="/register" component={Register} />
+      <Route path="/login" component={Login} />
+      <Route path="/verify-email-sent" component={VerifyEmailSent} />
+      <Route path="/verify-email" component={VerifyEmail} />
+      <Route path="/forgot-password" component={ForgotPassword} />
+      <Route path="/reset-password" component={ResetPassword} />
       <Route path="/directory" component={Directory} />
       <Route path="/brand/:slug" component={BrandDetail} />
       <Route path="/compare" component={Compare} />

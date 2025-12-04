@@ -14,7 +14,7 @@ import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
 
-// Session storage table (mandatory for Replit Auth)
+// Session storage table for Passport.js session management
 export const sessions = pgTable(
   "sessions",
   {
@@ -63,7 +63,7 @@ export const ModerationCategory = {
 
 export type ModerationCategoryType = (typeof ModerationCategory)[keyof typeof ModerationCategory];
 
-// Users table (extended for Replit Auth)
+// Users table (extended for local auth)
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   email: varchar("email").unique(),
@@ -74,6 +74,13 @@ export const users = pgTable("users", {
   isVerified: boolean("is_verified").default(false),
   verificationStatus: varchar("verification_status", { length: 20 }).default("pending"),
   notificationPreferences: jsonb("notification_preferences").default({}),
+  // Authentication columns
+  passwordHash: varchar("password_hash", { length: 255 }),
+  emailVerified: boolean("email_verified").default(false).notNull(),
+  emailVerificationToken: varchar("email_verification_token", { length: 255 }),
+  emailVerificationExpires: timestamp("email_verification_expires"),
+  passwordResetToken: varchar("password_reset_token", { length: 255 }),
+  passwordResetExpires: timestamp("password_reset_expires"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -319,3 +326,24 @@ export type InsertSavedComparison = z.infer<typeof insertSavedComparisonSchema>;
 export type ReviewReport = typeof reviewReports.$inferSelect;
 export type WordFrequency = typeof wordFrequencies.$inferSelect;
 export type ModerationLog = typeof moderationLogs.$inferSelect;
+
+// Authentication validation schemas
+export const registerSchema = z.object({
+  email: z.string().email("Invalid email address"),
+  password: z.string()
+    .min(8, "Password must be at least 8 characters")
+    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+    .regex(/[0-9]/, "Password must contain at least one number")
+    .regex(/[^A-Za-z0-9]/, "Password must contain at least one special character"),
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+  userType: z.enum(["franchisee", "franchisor"]),
+});
+
+export const loginSchema = z.object({
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(1, "Password is required"),
+});
+
+export type RegisterInput = z.infer<typeof registerSchema>;
+export type LoginInput = z.infer<typeof loginSchema>;

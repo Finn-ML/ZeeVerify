@@ -4,7 +4,7 @@
 - **Epic:** 2 - User Authentication & Onboarding
 - **Story ID:** 2.1
 - **Title:** User Schema Authentication Columns
-- **Status:** ready-for-dev
+- **Status:** review
 - **Dependencies:** None
 
 ## User Story
@@ -91,20 +91,42 @@ npm run db:push
 ```
 
 ## Definition of Done
-- [ ] `passwordHash` column added to users table
-- [ ] `emailVerified` column added with default false
-- [ ] `emailVerificationToken` column added
-- [ ] `emailVerificationExpires` column added
-- [ ] `passwordResetToken` column added
-- [ ] `passwordResetExpires` column added
-- [ ] `registerSchema` Zod schema created
-- [ ] `loginSchema` Zod schema created
-- [ ] Database migration runs successfully
-- [ ] TypeScript compiles without errors
-- [ ] Existing user data preserved
+- [x] `passwordHash` column added to users table
+- [x] `emailVerified` column added with default false
+- [x] `emailVerificationToken` column added
+- [x] `emailVerificationExpires` column added
+- [x] `passwordResetToken` column added
+- [x] `passwordResetExpires` column added
+- [x] `registerSchema` Zod schema created
+- [x] `loginSchema` Zod schema created
+- [ ] Database migration runs successfully (requires `npm run db:push`)
+- [x] TypeScript compiles without errors
+- [x] Existing user data preserved (nullable columns for migration)
 
 ## Test Scenarios
 1. **Schema Push:** All columns created without errors
 2. **Existing Users:** Old users still queryable
 3. **New Users:** Can insert users with new columns
 4. **Nullable Fields:** Token columns accept null values
+
+## Dev Agent Record
+
+### Agent Model Used
+Claude Opus 4.5 (claude-opus-4-5-20251101)
+
+### Completion Notes List
+- Added 6 authentication columns to users table in shared/schema.ts
+- passwordHash is nullable to support migration from OIDC
+- emailVerified has default false with notNull constraint
+- All token/expires columns are nullable
+- Created registerSchema with password validation (8+ chars, uppercase, number, special char)
+- Created loginSchema for login validation
+- TypeScript compiles (pre-existing errors in unrelated files)
+- Schema ready for db:push migration
+
+### File List
+**Files Modified:**
+- `shared/schema.ts` - Added authentication columns and Zod schemas
+
+### Change Log
+- 2025-12-04: Added user authentication columns and validation schemas

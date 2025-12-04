@@ -1,5 +1,6 @@
 import {
   users,
+  sessions,
   brands,
   reviews,
   reviewResponses,
@@ -31,13 +32,23 @@ import { db } from "./db";
 import { eq, and, or, ilike, desc, asc, sql, inArray, count } from "drizzle-orm";
 
 export interface IStorage {
-  // User operations (mandatory for Replit Auth)
+  // User operations
   getUser(id: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
+  createUser(user: Partial<UpsertUser>): Promise<User>;
   updateUser(id: string, data: Partial<UpsertUser>): Promise<User | undefined>;
   deleteUser(id: string): Promise<void>;
   getUsers(params: { search?: string; limit?: number; offset?: number }): Promise<{ users: User[]; total: number }>;
   updateUserRole(id: string, role: string): Promise<User | undefined>;
+  getUserByVerificationToken(token: string): Promise<User | undefined>;
+  getUserByPasswordResetToken(token: string): Promise<User | undefined>;
+  verifyUserEmail(userId: string): Promise<void>;
+  updateVerificationToken(userId: string, token: string, expires: Date): Promise<void>;
+  updatePasswordResetToken(userId: string, token: string, expires: Date): Promise<void>;
+  clearPasswordResetToken(userId: string): Promise<void>;
+  updatePassword(userId: string, passwordHash: string): Promise<void>;
+  invalidateUserSessions(userId: string): Promise<void>;
 
   // Brand operations
   getBrand(id: string): Promise<Brand | undefined>;
@@ -106,6 +117,89 @@ export class DatabaseStorage implements IStorage {
   // User operations
   async getUser(id: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user;
+  }
+
+  async getUserByVerificationToken(token: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.emailVerificationToken, token));
+    return user;
+  }
+
+  async getUserByPasswordResetToken(token: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.passwordResetToken, token));
+    return user;
+  }
+
+  async verifyUserEmail(userId: string): Promise<void> {
+    await db
+      .update(users)
+      .set({
+        emailVerified: true,
+        emailVerificationToken: null,
+        emailVerificationExpires: null,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId));
+  }
+
+  async updateVerificationToken(userId: string, token: string, expires: Date): Promise<void> {
+    await db
+      .update(users)
+      .set({
+        emailVerificationToken: token,
+        emailVerificationExpires: expires,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId));
+  }
+
+  async updatePasswordResetToken(userId: string, token: string, expires: Date): Promise<void> {
+    await db
+      .update(users)
+      .set({
+        passwordResetToken: token,
+        passwordResetExpires: expires,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId));
+  }
+
+  async clearPasswordResetToken(userId: string): Promise<void> {
+    await db
+      .update(users)
+      .set({
+        passwordResetToken: null,
+        passwordResetExpires: null,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId));
+  }
+
+  async updatePassword(userId: string, passwordHash: string): Promise<void> {
+    await db
+      .update(users)
+      .set({
+        passwordHash,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId));
+  }
+
+  async invalidateUserSessions(userId: string): Promise<void> {
+    // Delete all sessions for this user from the sessions table
+    // Sessions store user ID in sess.passport.user
+    await db.delete(sessions).where(
+      sql`sess->'passport'->>'user' = ${userId}`
+    );
+  }
+
+  async createUser(userData: Partial<UpsertUser>): Promise<User> {
+    const [user] = await db.insert(users).values(userData as UpsertUser).returning();
     return user;
   }
 

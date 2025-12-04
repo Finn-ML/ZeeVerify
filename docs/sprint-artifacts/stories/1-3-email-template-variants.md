@@ -4,7 +4,7 @@
 - **Epic:** 1 - Email Infrastructure Foundation
 - **Story ID:** 1.3
 - **Title:** Email Template Variants
-- **Status:** ready-for-dev
+- **Status:** review
 - **Dependencies:** Story 1.2
 
 ## User Story
@@ -118,16 +118,37 @@ async sendWelcomeEmail(to: string, firstName: string): Promise<boolean> {
 - Example: `crypto.randomBytes(32).toString('base64url')`
 
 ## Definition of Done
-- [ ] `sendVerificationEmail()` method implemented
-- [ ] `sendPasswordResetEmail()` method implemented
-- [ ] `sendWelcomeEmail()` method implemented
-- [ ] All emails use branded template
-- [ ] Dynamic content properly escaped
-- [ ] Expiration messages included where appropriate
-- [ ] TypeScript compiles without errors
+- [x] `sendVerificationEmail()` method implemented
+- [x] `sendPasswordResetEmail()` method implemented
+- [x] `sendWelcomeEmail()` method implemented
+- [x] All emails use branded template
+- [x] Dynamic content properly escaped
+- [x] Expiration messages included where appropriate
+- [x] TypeScript compiles without errors
 
 ## Test Scenarios
 1. **Verification Email:** Contains verify link, 24hr expiry message
 2. **Password Reset:** Contains reset link, 1hr expiry, security warning
 3. **Welcome Email:** Personalized greeting, getting started tips
 4. **XSS Prevention:** User names with special chars escaped
+
+## Dev Agent Record
+
+### Agent Model Used
+Claude Opus 4.5 (claude-opus-4-5-20251101)
+
+### Completion Notes List
+- Implemented `sendVerificationEmail()` with 24-hour expiry message
+- Implemented `sendPasswordResetEmail()` with 1-hour expiry and security warning
+- Implemented `sendWelcomeEmail()` with getting started tips and XSS-safe name handling
+- All templates use `wrapInTemplate()` for consistent branding
+- Added BASE_URL environment variable documentation to .env.example
+- TypeScript compiles without errors
+
+### File List
+**Files Modified:**
+- `server/services/email.ts` - Added sendVerificationEmail, sendPasswordResetEmail, sendWelcomeEmail methods
+- `.env.example` - Added BASE_URL environment variable
+
+### Change Log
+- 2025-12-04: Implemented all email template variants

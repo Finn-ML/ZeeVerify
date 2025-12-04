@@ -1,30 +1,299 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated, isAdmin } from "./replitAuth";
-import { insertReviewSchema, insertLeadSchema, insertSavedComparisonSchema } from "@shared/schema";
+import { setupLocalAuth, isAuthenticated, isAdmin, passport } from "./localAuth";
+import { insertReviewSchema, insertLeadSchema, insertSavedComparisonSchema, registerSchema } from "@shared/schema";
 import { randomBytes } from "crypto";
+import bcrypt from "bcrypt";
+import { z } from "zod";
+import { emailService } from "./services/email";
+
+// Security constants
+const BCRYPT_ROUNDS = 12;
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Auth middleware
-  await setupAuth(app);
+  // Auth middleware - session and passport setup
+  await setupLocalAuth(app);
 
-  // Auth routes
-  app.get("/api/auth/user", isAuthenticated, async (req: any, res) => {
+  // Registration route
+  app.post("/api/auth/register", async (req, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      res.json(user);
+      const data = registerSchema.parse(req.body);
+
+      // Check if email exists
+      const existing = await storage.getUserByEmail(data.email);
+      if (existing) {
+        return res.status(400).json({ message: "An account with this email already exists" });
+      }
+
+      // Hash password
+      const passwordHash = await bcrypt.hash(data.password, BCRYPT_ROUNDS);
+
+      // Generate verification token
+      const verificationToken = randomBytes(32).toString("base64url");
+      const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+      // Create user
+      const user = await storage.createUser({
+        email: data.email,
+        passwordHash,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        role: data.userType,
+        emailVerified: false,
+        emailVerificationToken: verificationToken,
+        emailVerificationExpires: verificationExpires,
+      });
+
+      // Send verification email
+      await emailService.sendVerificationEmail(data.email, verificationToken);
+
+      res.status(201).json({ message: "Registration successful. Please check your email." });
     } catch (error) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: error.errors[0].message });
+      }
+      console.error("Registration error:", error);
+      res.status(500).json({ message: "Registration failed" });
+    }
+  });
+
+  // Login route
+  app.post("/api/auth/login", (req, res, next) => {
+    passport.authenticate("local", (err: any, user: any, info: any) => {
+      if (err) {
+        return next(err);
+      }
+      if (!user) {
+        // Check if unverified
+        if (info?.message === "unverified") {
+          return res.status(403).json({
+            message: "Please verify your email before logging in",
+            code: "UNVERIFIED",
+          });
+        }
+        return res.status(401).json({ message: info?.message || "Login failed" });
+      }
+      req.logIn(user, (err: any) => {
+        if (err) {
+          return next(err);
+        }
+        res.json({
+          user: {
+            id: user.id,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            role: user.role,
+          },
+        });
+      });
+    })(req, res, next);
+  });
+
+  // Logout route
+  app.post("/api/auth/logout", (req, res) => {
+    req.logout((err: any) => {
+      if (err) {
+        return res.status(500).json({ message: "Logout failed" });
+      }
+      res.json({ message: "Logged out successfully" });
+    });
+  });
+
+  // Get current user
+  app.get("/api/auth/me", (req, res) => {
+    if (req.isAuthenticated()) {
+      const user = req.user as any;
+      res.json({
+        user: {
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          role: user.role,
+          emailVerified: user.emailVerified,
+        },
+      });
+    } else {
+      res.status(401).json({ message: "Not authenticated" });
+    }
+  });
+
+  // Email verification route
+  app.post("/api/auth/verify-email", async (req, res) => {
+    try {
+      const { token } = req.body;
+
+      if (!token) {
+        return res.status(400).json({ message: "Token is required" });
+      }
+
+      const user = await storage.getUserByVerificationToken(token);
+
+      if (!user) {
+        return res.status(400).json({ message: "Invalid or expired verification link" });
+      }
+
+      if (user.emailVerificationExpires && new Date() > user.emailVerificationExpires) {
+        return res.status(400).json({ message: "Invalid or expired verification link" });
+      }
+
+      await storage.verifyUserEmail(user.id);
+
+      // Send welcome email after successful verification
+      if (user.email && user.firstName) {
+        await emailService.sendWelcomeEmail(user.email, user.firstName);
+      }
+
+      res.json({ message: "Email verified successfully" });
+    } catch (error) {
+      console.error("Email verification error:", error);
+      res.status(500).json({ message: "Verification failed" });
+    }
+  });
+
+  // Resend verification email route
+  app.post("/api/auth/resend-verification", async (req, res) => {
+    try {
+      const { email } = req.body;
+
+      if (!email) {
+        return res.status(400).json({ message: "Email is required" });
+      }
+
+      const user = await storage.getUserByEmail(email);
+
+      if (!user) {
+        // Don't reveal if email exists - security best practice
+        return res.json({ message: "If an account exists, a verification email will be sent" });
+      }
+
+      if (user.emailVerified) {
+        return res.status(400).json({ message: "Email is already verified" });
+      }
+
+      // Rate limit check (1 per 5 minutes based on when token was created)
+      if (user.emailVerificationExpires) {
+        const tokenCreatedAt = new Date(user.emailVerificationExpires.getTime() - 24 * 60 * 60 * 1000);
+        const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+        if (tokenCreatedAt > fiveMinutesAgo) {
+          return res.status(429).json({ message: "Please wait before requesting another email" });
+        }
+      }
+
+      // Generate new token
+      const newToken = randomBytes(32).toString("base64url");
+      const newExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+      await storage.updateVerificationToken(user.id, newToken, newExpires);
+      await emailService.sendVerificationEmail(user.email!, newToken);
+
+      res.json({ message: "Verification email sent" });
+    } catch (error) {
+      console.error("Resend verification error:", error);
+      res.status(500).json({ message: "Failed to send verification email" });
+    }
+  });
+
+  // Rate limit tracking for password reset
+  // WARNING: In-memory Map - resets on server restart and doesn't work with multiple instances
+  // TODO: For production horizontal scaling, migrate to Redis or database-backed rate limiting
+  const resetAttempts = new Map<string, { count: number; lastAttempt: Date }>();
+
+  // Forgot password route
+  app.post("/api/auth/forgot-password", async (req, res) => {
+    try {
+      const { email } = req.body;
+
+      if (!email) {
+        return res.status(400).json({ message: "Email is required" });
+      }
+
+      // Rate limit: 3 requests per hour per email
+      const attempts = resetAttempts.get(email);
+      if (attempts) {
+        const hourAgo = new Date(Date.now() - 60 * 60 * 1000);
+        if (attempts.lastAttempt > hourAgo && attempts.count >= 3) {
+          return res.status(429).json({ message: "Too many reset attempts. Please try again later." });
+        }
+        // Reset counter if over an hour
+        if (attempts.lastAttempt <= hourAgo) {
+          resetAttempts.delete(email);
+        }
+      }
+
+      const user = await storage.getUserByEmail(email);
+
+      if (user && user.email) {
+        const resetToken = randomBytes(32).toString("base64url");
+        const resetExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+        await storage.updatePasswordResetToken(user.id, resetToken, resetExpires);
+        await emailService.sendPasswordResetEmail(user.email, resetToken);
+
+        // Track attempt
+        const current = resetAttempts.get(email) || { count: 0, lastAttempt: new Date() };
+        resetAttempts.set(email, { count: current.count + 1, lastAttempt: new Date() });
+      }
+
+      // Always return success (don't reveal if email exists)
+      res.json({ message: "If an account exists, you'll receive a reset email" });
+    } catch (error) {
+      console.error("Forgot password error:", error);
+      res.status(500).json({ message: "Failed to process request" });
+    }
+  });
+
+  // Reset password route
+  app.post("/api/auth/reset-password", async (req, res) => {
+    try {
+      const { token, password } = req.body;
+
+      if (!token || !password) {
+        return res.status(400).json({ message: "Token and password are required" });
+      }
+
+      const user = await storage.getUserByPasswordResetToken(token);
+
+      if (!user) {
+        return res.status(400).json({ message: "Invalid or expired reset link" });
+      }
+
+      if (user.passwordResetExpires && new Date() > user.passwordResetExpires) {
+        return res.status(400).json({ message: "Invalid or expired reset link" });
+      }
+
+      // Validate password strength
+      const passwordRegex = /^(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,}$/;
+      if (!passwordRegex.test(password)) {
+        return res.status(400).json({ message: "Password does not meet requirements" });
+      }
+
+      // Hash and update password
+      const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
+      await storage.updatePassword(user.id, passwordHash);
+      await storage.clearPasswordResetToken(user.id);
+
+      // Invalidate all existing sessions for security
+      await storage.invalidateUserSessions(user.id);
+
+      // Mark email as verified since user proved ownership via reset link
+      if (!user.emailVerified) {
+        await storage.verifyUserEmail(user.id);
+      }
+
+      res.json({ message: "Password reset successfully" });
+    } catch (error) {
+      console.error("Reset password error:", error);
+      res.status(500).json({ message: "Failed to reset password" });
     }
   });
 
   // User routes
   app.patch("/api/users/me", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const { firstName, lastName } = req.body;
       const user = await storage.updateUser(userId, { firstName, lastName });
       res.json(user);
@@ -36,7 +305,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.patch("/api/users/me/notifications", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const { preferences } = req.body;
       const user = await storage.updateUser(userId, { notificationPreferences: preferences });
       res.json(user);
@@ -48,7 +317,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/users/me", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       await storage.deleteUser(userId);
       req.logout(() => {
         res.json({ message: "Account deleted" });
@@ -126,7 +395,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Review routes
   app.post("/api/reviews", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const reviewData = insertReviewSchema.parse({ ...req.body, userId });
 
       // All reviews go to pending for manual moderation
@@ -145,7 +414,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/reviews/:id/respond", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const { id } = req.params;
       const { content } = req.body;
 
@@ -176,7 +445,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/reviews/:id/report", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const { id } = req.params;
       const { reason, description } = req.body;
 
@@ -210,7 +479,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Comparison routes
   app.post("/api/comparisons", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const { name, brandIds } = req.body;
 
       const shareToken = randomBytes(32).toString("hex");
@@ -251,7 +520,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Franchisee portal routes
   app.get("/api/franchisee/reviews", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const reviews = await storage.getReviewsByUser(userId);
 
       const reviewsWithResponses = await Promise.all(
@@ -271,7 +540,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Franchisor portal routes
   app.get("/api/franchisor/brands", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const brands = await storage.getBrandsByClaimedUser(userId);
       res.json({ brands });
     } catch (error) {
@@ -282,7 +551,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/franchisor/reviews", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const brands = await storage.getBrandsByClaimedUser(userId);
 
       const allReviews = await Promise.all(
@@ -306,7 +575,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/franchisor/leads", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const leads = await storage.getLeadsForFranchisor(userId);
       res.json({ leads });
     } catch (error) {
@@ -376,7 +645,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       const { action, notes } = req.body;
-      const moderatorId = req.user.claims.sub;
+      const moderatorId = req.user.id;
 
       const review = await storage.moderateReview(id, action, moderatorId, notes);
       res.json(review);

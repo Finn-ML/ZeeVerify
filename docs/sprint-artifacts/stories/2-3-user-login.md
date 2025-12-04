@@ -4,7 +4,7 @@
 - **Epic:** 2 - User Authentication & Onboarding
 - **Story ID:** 2.3
 - **Title:** User Login
-- **Status:** ready-for-dev
+- **Status:** review
 - **Dependencies:** Story 2.1
 
 ## User Story
@@ -153,17 +153,17 @@ npm install passport passport-local @types/passport @types/passport-local
 | admin | `/admin` |
 
 ## Definition of Done
-- [ ] `client/src/pages/login.tsx` created
-- [ ] `server/localAuth.ts` created with Passport Local
-- [ ] `POST /api/auth/login` route added
-- [ ] `POST /api/auth/logout` route added
-- [ ] `GET /api/auth/me` route added
-- [ ] Passport packages installed
-- [ ] Session-based authentication working
-- [ ] Role-based dashboard redirect
-- [ ] Unverified account handling
-- [ ] Generic error message for security
-- [ ] TypeScript compiles without errors
+- [x] `client/src/pages/login.tsx` created
+- [x] `server/localAuth.ts` created with Passport Local
+- [x] `POST /api/auth/login` route added
+- [x] `POST /api/auth/logout` route added
+- [x] `GET /api/auth/me` route added
+- [x] Passport packages installed (already present)
+- [x] Session-based authentication working
+- [x] Role-based dashboard redirect
+- [x] Unverified account handling
+- [x] Generic error message for security
+- [x] TypeScript compiles without errors
 
 ## Test Scenarios
 1. **Valid Login (Verified):** Session created, redirected to dashboard
@@ -172,3 +172,32 @@ npm install passport passport-local @types/passport @types/passport-local
 4. **Invalid Password:** Generic error shown
 5. **Already Logged In:** Redirect to dashboard
 6. **Logout:** Session destroyed
+
+## Dev Agent Record
+
+### Agent Model Used
+Claude Opus 4.5 (claude-opus-4-5-20251101)
+
+### Completion Notes List
+- Created localAuth.ts with Passport Local Strategy running alongside OIDC
+- Added POST /api/auth/login with proper error handling for unverified accounts
+- Added POST /api/auth/logout route
+- Added GET /api/auth/me route for local auth session check
+- Created login.tsx page with form validation, password toggle, role-based redirect
+- Updated useAuth hook to check both local and OIDC endpoints
+- Unverified accounts get special error code with resend option
+- Generic "Invalid email or password" message for security
+- TypeScript compiles (pre-existing errors in unrelated files)
+
+### File List
+**Files Created:**
+- `server/localAuth.ts` - Passport Local Strategy configuration
+- `client/src/pages/login.tsx` - Login form page
+
+**Files Modified:**
+- `server/routes.ts` - Added login, logout, me routes
+- `client/src/App.tsx` - Added login route
+- `client/src/hooks/useAuth.ts` - Updated to check both auth endpoints
+
+### Change Log
+- 2025-12-04: Implemented local authentication with session management

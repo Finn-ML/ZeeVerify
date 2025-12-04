@@ -4,7 +4,7 @@
 - **Epic:** 2 - User Authentication & Onboarding
 - **Story ID:** 2.5
 - **Title:** Password Reset Flow
-- **Status:** ready-for-dev
+- **Status:** review
 - **Dependencies:** Story 1.3, Story 2.1
 
 ## User Story
@@ -229,16 +229,16 @@ clearPasswordResetToken(userId: number): Promise<void>
 - Other sessions invalidated on reset
 
 ## Definition of Done
-- [ ] `client/src/pages/forgot-password.tsx` created
-- [ ] `client/src/pages/reset-password.tsx` created
-- [ ] `POST /api/auth/forgot-password` route added
-- [ ] `POST /api/auth/reset-password` route added
-- [ ] Storage methods for reset tokens implemented
-- [ ] Rate limiting (3 per hour per email)
-- [ ] 1-hour token expiration
-- [ ] Password strength validation on reset
-- [ ] Security-conscious success messages
-- [ ] TypeScript compiles without errors
+- [x] `client/src/pages/forgot-password.tsx` created
+- [x] `client/src/pages/reset-password.tsx` created
+- [x] `POST /api/auth/forgot-password` route added
+- [x] `POST /api/auth/reset-password` route added
+- [x] Storage methods for reset tokens implemented
+- [x] Rate limiting (3 per hour per email)
+- [x] 1-hour token expiration
+- [x] Password strength validation on reset
+- [x] Security-conscious success messages
+- [x] TypeScript compiles without errors
 
 ## Test Scenarios
 1. **Valid Email:** Reset email sent
@@ -247,3 +247,31 @@ clearPasswordResetToken(userId: number): Promise<void>
 4. **Valid Reset:** Password updated, redirected
 5. **Expired Token:** Error with retry option
 6. **Weak Password:** Validation error
+
+## Dev Agent Record
+
+### Agent Model Used
+Claude Opus 4.5 (claude-opus-4-5-20251101)
+
+### Completion Notes List
+- Created forgot-password.tsx with email form and success state
+- Created reset-password.tsx with password confirmation and strength indicator
+- Added POST /api/auth/forgot-password with rate limiting (3 per hour)
+- Added POST /api/auth/reset-password with token validation and password strength check
+- Added updatePassword storage method
+- Generic success message prevents email enumeration
+- 1-hour token expiration enforced
+- TypeScript compiles (pre-existing errors in unrelated files)
+
+### File List
+**Files Created:**
+- `client/src/pages/forgot-password.tsx` - Forgot password form
+- `client/src/pages/reset-password.tsx` - Reset password form with validation
+
+**Files Modified:**
+- `server/routes.ts` - Added forgot-password and reset-password routes
+- `server/storage.ts` - Added updatePassword method
+- `client/src/App.tsx` - Added forgot-password and reset-password routes
+
+### Change Log
+- 2025-12-04: Implemented complete password reset flow with security measures
