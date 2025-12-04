@@ -81,7 +81,7 @@ development_status:
   # FRs: FR-4.5.1, FR-4.5.2, FR-4.5.9, FR-4.10.1-8
   # ============================================
   epic-4: in-progress
-  4-1-stripe-service-setup: ready-for-dev
+  4-1-stripe-service-setup: review
   4-2-brand-claim-checkout-flow: ready-for-dev
   4-3-stripe-webhook-handler: ready-for-dev
   4-4-verified-badge-display: ready-for-dev
