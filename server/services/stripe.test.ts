@@ -94,9 +94,9 @@ describe("StripeService", () => {
       const service = new StripeService();
 
       const result = await service.createCheckoutSession({
-        brandId: 1,
+        brandId: "brand-uuid-1",
         brandName: "Test Brand",
-        userId: 1,
+        userId: "user-uuid-1",
         userEmail: "test@example.com",
         returnUrl: "http://localhost:5000/payment/success",
       });
@@ -114,9 +114,9 @@ describe("StripeService", () => {
       const service = new StripeService();
 
       const result = await service.createCheckoutSession({
-        brandId: 1,
+        brandId: "brand-uuid-1",
         brandName: "Test Brand",
-        userId: 1,
+        userId: "user-uuid-1",
         userEmail: "test@example.com",
         returnUrl: "http://localhost:5000/payment/success",
       });
@@ -222,9 +222,9 @@ describe("StripeService", () => {
       expect(service.isAvailable()).toBe(false);
       expect(
         await service.createCheckoutSession({
-          brandId: 1,
+          brandId: "brand-uuid-1",
           brandName: "Test",
-          userId: 1,
+          userId: "user-uuid-1",
           userEmail: "test@example.com",
           returnUrl: "http://localhost",
         })

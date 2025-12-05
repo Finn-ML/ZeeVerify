@@ -12,7 +12,8 @@
       "WebFetch(domain:raw.githubusercontent.com)",
       "Bash(npm run check:*)",
       "Bash(npx tsc:*)",
-      "Bash(npm run db:push:*)"
+      "Bash(npm run db:push:*)",
+      "Bash(npm run test:*)"
     ],
     "deny": [],
     "ask": []

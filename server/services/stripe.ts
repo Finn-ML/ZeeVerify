@@ -36,9 +36,9 @@ export class StripeService {
    * @returns Client secret for embedded checkout, or null on failure
    */
   async createCheckoutSession(options: {
-    brandId: number;
+    brandId: string;
     brandName: string;
-    userId: number;
+    userId: string;
     userEmail: string;
     returnUrl: string;
   }): Promise<{ clientSecret: string } | null> {
@@ -58,8 +58,8 @@ export class StripeService {
           },
         ],
         metadata: {
-          brandId: options.brandId.toString(),
-          userId: options.userId.toString(),
+          brandId: options.brandId,
+          userId: options.userId,
           brandName: options.brandName,
         },
         customer_email: options.userEmail,

@@ -882,9 +882,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create checkout session
       const baseUrl = process.env.BASE_URL || "http://localhost:5000";
       const session = await stripeService.createCheckoutSession({
-        brandId: parseInt(brand.id),
+        brandId: brand.id,
         brandName: brand.name,
-        userId: parseInt(user.id),
+        userId: user.id,
         userEmail: user.email,
         returnUrl: `${baseUrl}/franchisor/claim-success?session_id={CHECKOUT_SESSION_ID}`,
       });
