@@ -633,12 +633,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const prefs = author.notificationPreferences as { reviewResponses?: boolean } | null;
 
           if (prefs?.reviewResponses !== false) {
-            await emailService.sendResponseNotification(
+            emailService.sendResponseNotification(
               author.email,
               brand.name,
               content,
-              parseInt(id)
-            );
+              brand.slug
+            ).catch(err => console.error("Failed to send response notification:", err));
           }
         }
       }
@@ -875,13 +875,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const prefs = franchisor.notificationPreferences as { reviewResponses?: boolean } | null;
 
             if (prefs?.reviewResponses !== false) {
-              await emailService.sendNewReviewNotification(
+              emailService.sendNewReviewNotification(
                 franchisor.email,
                 brand.name,
                 reviewBefore.content || '',
                 reviewBefore.overallRating,
-                parseInt(id)
-              );
+                brand.slug
+              ).catch(err => console.error("Failed to send new review notification:", err));
             }
           }
         }
@@ -894,11 +894,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const prefs = author.notificationPreferences as { moderationOutcomes?: boolean } | null;
 
             if (prefs?.moderationOutcomes !== false) {
-              await emailService.sendReviewApprovedEmail(
+              emailService.sendReviewApprovedEmail(
                 author.email,
                 brand?.name || 'Unknown Brand',
-                parseInt(id)
-              );
+                brand?.slug || ''
+              ).catch(err => console.error("Failed to send review approved email:", err));
             }
           }
         }
@@ -911,11 +911,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const prefs = author.notificationPreferences as { moderationOutcomes?: boolean } | null;
 
             if (prefs?.moderationOutcomes !== false) {
-              await emailService.sendReviewRejectedEmail(
+              emailService.sendReviewRejectedEmail(
                 author.email,
                 brand?.name || 'Unknown Brand',
                 notes || 'Your review did not meet our community guidelines.'
-              );
+              ).catch(err => console.error("Failed to send review rejected email:", err));
             }
           }
         }
@@ -1093,13 +1093,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const brand = await storage.getBrand(brandId);
 
           if (user && brand && user.email) {
-            await emailService.sendPaymentConfirmation(
+            // Note: receipt_url is not available on Checkout.Session, only on Charge
+            // User can access receipt from Stripe's email or their Stripe customer portal
+            emailService.sendPaymentConfirmation(
               user.email,
               brand.name,
               (session.amount_total || 0) / 100, // Convert cents to dollars
-              session.id,
-              (session as any).receipt_url || undefined
-            );
+              session.id
+            ).catch(err => console.error("Failed to send payment confirmation:", err));
           }
 
           console.log(`Brand ${brandId} claimed by user ${userId}`);

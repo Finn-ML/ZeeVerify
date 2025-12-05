@@ -197,7 +197,7 @@ export class EmailService {
    * @param brandName - Name of the brand
    * @param reviewSummary - Review content (will be truncated to 100 chars)
    * @param rating - Overall rating (1-5)
-   * @param reviewId - Review ID for linking
+   * @param brandSlug - Brand slug for URL linking
    * @returns true on success, false on failure
    */
   async sendNewReviewNotification(
@@ -205,9 +205,10 @@ export class EmailService {
     brandName: string,
     reviewSummary: string,
     rating: number,
-    reviewId: number
+    brandSlug: string
   ): Promise<boolean> {
-    const reviewUrl = `${process.env.BASE_URL || 'http://localhost:5000'}/franchisor/reviews/${reviewId}`;
+    // Link to franchisor dashboard where they can see and respond to reviews
+    const reviewUrl = `${process.env.BASE_URL || 'http://localhost:5000'}/franchisor`;
     const safeBrandName = this.escapeHtml(brandName);
     const safeSummary = this.escapeHtml(reviewSummary.slice(0, 100));
 
@@ -243,16 +244,17 @@ export class EmailService {
    * @param to - Review author's email address
    * @param brandName - Name of the brand
    * @param responsePreview - Response content (will be truncated to 100 chars)
-   * @param reviewId - Review ID for linking
+   * @param brandSlug - Brand slug for linking to brand page
    * @returns true on success, false on failure
    */
   async sendResponseNotification(
     to: string,
     brandName: string,
     responsePreview: string,
-    reviewId: number
+    brandSlug: string
   ): Promise<boolean> {
-    const reviewUrl = `${process.env.BASE_URL || 'http://localhost:5000'}/reviews/${reviewId}`;
+    // Link to brand page where the review and response are visible
+    const reviewUrl = `${process.env.BASE_URL || 'http://localhost:5000'}/brand/${brandSlug}`;
     const safeBrandName = this.escapeHtml(brandName);
     const safeResponse = this.escapeHtml(responsePreview.slice(0, 100));
 
@@ -285,15 +287,16 @@ export class EmailService {
    * Send notification to review author when their review is approved
    * @param to - Review author's email address
    * @param brandName - Name of the brand
-   * @param reviewId - Review ID for linking
+   * @param brandSlug - Brand slug for linking to brand page
    * @returns true on success, false on failure
    */
   async sendReviewApprovedEmail(
     to: string,
     brandName: string,
-    reviewId: number
+    brandSlug: string
   ): Promise<boolean> {
-    const reviewUrl = `${process.env.BASE_URL || 'http://localhost:5000'}/reviews/${reviewId}`;
+    // Link to brand page where the review is visible
+    const reviewUrl = `${process.env.BASE_URL || 'http://localhost:5000'}/brand/${brandSlug}`;
     const safeBrandName = this.escapeHtml(brandName);
 
     const content = `
