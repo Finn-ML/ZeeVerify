@@ -192,6 +192,280 @@ export class EmailService {
   }
 
   /**
+   * Send notification to franchisor when new review is approved for their brand
+   * @param to - Franchisor's email address
+   * @param brandName - Name of the brand
+   * @param reviewSummary - Review content (will be truncated to 100 chars)
+   * @param rating - Overall rating (1-5)
+   * @param reviewId - Review ID for linking
+   * @returns true on success, false on failure
+   */
+  async sendNewReviewNotification(
+    to: string,
+    brandName: string,
+    reviewSummary: string,
+    rating: number,
+    reviewId: number
+  ): Promise<boolean> {
+    const reviewUrl = `${process.env.BASE_URL || 'http://localhost:5000'}/franchisor/reviews/${reviewId}`;
+    const safeBrandName = this.escapeHtml(brandName);
+    const safeSummary = this.escapeHtml(reviewSummary.slice(0, 100));
+
+    // Star rating display
+    const stars = '★'.repeat(Math.round(rating)) + '☆'.repeat(5 - Math.round(rating));
+
+    const content = `
+      <h2 style="color: #1a1f36; margin-bottom: 20px;">New Review for ${safeBrandName}</h2>
+
+      <div style="background-color: #f9f9f9; border-radius: 8px; padding: 20px; margin: 20px 0;">
+        <div style="color: #c9a962; font-size: 20px; margin-bottom: 10px;">${stars}</div>
+        <p style="color: #333; font-style: italic; margin: 0;">"${safeSummary}${reviewSummary.length > 100 ? '...' : ''}"</p>
+      </div>
+
+      <p>A new review has been published for your brand. Responding to reviews shows franchisees that you value their feedback.</p>
+
+      <p style="text-align: center; margin: 30px 0;">
+        <a href="${reviewUrl}" style="background-color: #c9a962; color: #1a1f36; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
+          View &amp; Respond
+        </a>
+      </p>
+    `;
+
+    return this.sendEmail(
+      to,
+      `New review for ${safeBrandName}`,
+      this.wrapInTemplate(content, true)
+    );
+  }
+
+  /**
+   * Send notification to franchisee when franchisor responds to their review
+   * @param to - Review author's email address
+   * @param brandName - Name of the brand
+   * @param responsePreview - Response content (will be truncated to 100 chars)
+   * @param reviewId - Review ID for linking
+   * @returns true on success, false on failure
+   */
+  async sendResponseNotification(
+    to: string,
+    brandName: string,
+    responsePreview: string,
+    reviewId: number
+  ): Promise<boolean> {
+    const reviewUrl = `${process.env.BASE_URL || 'http://localhost:5000'}/reviews/${reviewId}`;
+    const safeBrandName = this.escapeHtml(brandName);
+    const safeResponse = this.escapeHtml(responsePreview.slice(0, 100));
+
+    const content = `
+      <h2 style="color: #1a1f36; margin-bottom: 20px;">Response from ${safeBrandName}</h2>
+
+      <p>The franchisor of ${safeBrandName} has responded to your review:</p>
+
+      <div style="background-color: #f9f9f9; border-left: 4px solid #c9a962; padding: 15px 20px; margin: 20px 0;">
+        <p style="color: #333; font-style: italic; margin: 0;">"${safeResponse}${responsePreview.length > 100 ? '...' : ''}"</p>
+      </div>
+
+      <p style="text-align: center; margin: 30px 0;">
+        <a href="${reviewUrl}" style="background-color: #c9a962; color: #1a1f36; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
+          View Full Response
+        </a>
+      </p>
+
+      <p style="font-size: 14px; color: #666;">Your identity remains anonymous. The franchisor cannot see who wrote the review.</p>
+    `;
+
+    return this.sendEmail(
+      to,
+      `${safeBrandName} responded to your review`,
+      this.wrapInTemplate(content, true)
+    );
+  }
+
+  /**
+   * Send notification to review author when their review is approved
+   * @param to - Review author's email address
+   * @param brandName - Name of the brand
+   * @param reviewId - Review ID for linking
+   * @returns true on success, false on failure
+   */
+  async sendReviewApprovedEmail(
+    to: string,
+    brandName: string,
+    reviewId: number
+  ): Promise<boolean> {
+    const reviewUrl = `${process.env.BASE_URL || 'http://localhost:5000'}/reviews/${reviewId}`;
+    const safeBrandName = this.escapeHtml(brandName);
+
+    const content = `
+      <h2 style="color: #1a1f36; margin-bottom: 20px;">Your Review Has Been Published!</h2>
+
+      <p>Great news! Your review for <strong>${safeBrandName}</strong> has been approved and is now live on ZeeVerify.</p>
+
+      <p>Thank you for sharing your franchise experience. Your feedback helps prospective franchise buyers make informed decisions.</p>
+
+      <p style="text-align: center; margin: 30px 0;">
+        <a href="${reviewUrl}" style="background-color: #c9a962; color: #1a1f36; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
+          View Your Review
+        </a>
+      </p>
+
+      <p style="font-size: 14px; color: #666;">Remember, your identity is protected. The franchisor and other users cannot see who wrote the review.</p>
+    `;
+
+    return this.sendEmail(
+      to,
+      'Your review has been published',
+      this.wrapInTemplate(content, true)
+    );
+  }
+
+  /**
+   * Send notification to review author when their review is rejected
+   * @param to - Review author's email address
+   * @param brandName - Name of the brand
+   * @param reason - Rejection reason provided by moderator
+   * @returns true on success, false on failure
+   */
+  async sendReviewRejectedEmail(
+    to: string,
+    brandName: string,
+    reason: string
+  ): Promise<boolean> {
+    const baseUrl = process.env.BASE_URL || 'http://localhost:5000';
+    const safeBrandName = this.escapeHtml(brandName);
+    const safeReason = this.escapeHtml(reason);
+
+    const content = `
+      <h2 style="color: #1a1f36; margin-bottom: 20px;">Update on Your Review Submission</h2>
+
+      <p>Thank you for submitting a review for <strong>${safeBrandName}</strong>.</p>
+
+      <p>Unfortunately, we were unable to publish your review at this time. Here's why:</p>
+
+      <div style="background-color: #fef2f2; border-left: 4px solid #ef4444; padding: 15px 20px; margin: 20px 0;">
+        <p style="color: #991b1b; margin: 0;"><strong>Reason:</strong> ${safeReason}</p>
+      </div>
+
+      <h3 style="color: #1a1f36; margin-top: 30px;">What You Can Do</h3>
+
+      <p>You're welcome to submit a new review that addresses the feedback above. We value your input and want to ensure all reviews meet our community guidelines.</p>
+
+      <p style="text-align: center; margin: 30px 0;">
+        <a href="${baseUrl}/franchisee/reviews/new" style="background-color: #c9a962; color: #1a1f36; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
+          Submit New Review
+        </a>
+      </p>
+
+      <p style="font-size: 14px; color: #666;">If you believe this decision was made in error, please contact our support team.</p>
+    `;
+
+    return this.sendEmail(
+      to,
+      'Update on your review submission',
+      this.wrapInTemplate(content, true)
+    );
+  }
+
+  /**
+   * Send payment confirmation email after successful brand claim purchase
+   * @param to - Franchisor's email address
+   * @param brandName - Name of the claimed brand
+   * @param amount - Payment amount in dollars
+   * @param transactionId - Stripe transaction/session ID
+   * @param receiptUrl - Optional Stripe hosted receipt URL
+   * @returns true on success, false on failure
+   */
+  async sendPaymentConfirmation(
+    to: string,
+    brandName: string,
+    amount: number,
+    transactionId: string,
+    receiptUrl?: string
+  ): Promise<boolean> {
+    const baseUrl = process.env.BASE_URL || 'http://localhost:5000';
+    const safeBrandName = this.escapeHtml(brandName);
+    const formattedAmount = new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+    }).format(amount);
+    const formattedDate = new Date().toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+
+    const receiptSection = receiptUrl
+      ? `<p style="text-align: center; margin: 20px 0;">
+           <a href="${receiptUrl}" style="color: #c9a962; text-decoration: underline;">
+             View detailed receipt
+           </a>
+         </p>`
+      : '';
+
+    const content = `
+      <h2 style="color: #1a1f36; margin-bottom: 20px;">Payment Confirmed!</h2>
+
+      <p>Thank you for claiming <strong>${safeBrandName}</strong> on ZeeVerify. Your payment has been successfully processed.</p>
+
+      <div style="background-color: #f9f9f9; border-radius: 8px; padding: 25px; margin: 25px 0;">
+        <h3 style="color: #1a1f36; margin: 0 0 20px 0; border-bottom: 1px solid #ddd; padding-bottom: 10px;">
+          Payment Details
+        </h3>
+
+        <table style="width: 100%; border-collapse: collapse;">
+          <tr>
+            <td style="padding: 8px 0; color: #666;">Brand Claimed</td>
+            <td style="padding: 8px 0; text-align: right; font-weight: bold;">${safeBrandName}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0; color: #666;">Amount</td>
+            <td style="padding: 8px 0; text-align: right; font-weight: bold;">${formattedAmount}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0; color: #666;">Date</td>
+            <td style="padding: 8px 0; text-align: right;">${formattedDate}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0; color: #666;">Transaction ID</td>
+            <td style="padding: 8px 0; text-align: right; font-family: monospace; font-size: 12px;">
+              ${transactionId.slice(-12)}
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      ${receiptSection}
+
+      <h3 style="color: #1a1f36; margin-top: 30px;">What's Next?</h3>
+
+      <ul style="padding-left: 20px; line-height: 1.8;">
+        <li>Your verified badge is now active on your brand listing</li>
+        <li>You can respond to franchisee reviews from your dashboard</li>
+        <li>Update your brand profile with logo, description, and videos</li>
+      </ul>
+
+      <p style="text-align: center; margin: 30px 0;">
+        <a href="${baseUrl}/franchisor" style="background-color: #c9a962; color: #1a1f36; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
+          Go to Dashboard
+        </a>
+      </p>
+
+      <p style="font-size: 14px; color: #666; margin-top: 30px;">
+        This is a transactional email for your payment records. Please keep this for your records.
+        If you have any questions about this charge, please contact support.
+      </p>
+    `;
+
+    // No unsubscribe for transactional payment emails
+    return this.sendEmail(
+      to,
+      `Payment confirmed - ${safeBrandName} claimed`,
+      this.wrapInTemplate(content, false)
+    );
+  }
+
+  /**
    * Send welcome email to new user
    * @param to - Recipient email address
    * @param firstName - User's first name

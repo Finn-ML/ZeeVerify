@@ -94,10 +94,10 @@ development_status:
   # FRs: FR-4.3.5-7, FR-4.9.7, FR-4.10.7
   # ============================================
   epic-5: in-progress
-  5-1-new-review-notification-for-franchisors: ready-for-dev
-  5-2-franchisor-response-notification: ready-for-dev
-  5-3-moderation-outcome-notification: ready-for-dev
-  5-4-payment-confirmation-email: ready-for-dev
+  5-1-new-review-notification-for-franchisors: review
+  5-2-franchisor-response-notification: review
+  5-3-moderation-outcome-notification: review
+  5-4-payment-confirmation-email: review
   epic-5-retrospective: optional
 
   # ============================================

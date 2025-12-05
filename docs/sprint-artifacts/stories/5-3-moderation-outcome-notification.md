@@ -4,7 +4,7 @@
 - **Epic:** 5 - Notification System
 - **Story ID:** 5.3
 - **Title:** Moderation Outcome Notification
-- **Status:** ready-for-dev
+- **Status:** Ready for Review
 - **Dependencies:** Epic 1 complete, Epic 2 complete
 
 ## User Story
@@ -170,14 +170,14 @@ rejectReview(reviewId: number, reason: string): Promise<void>
 ```
 
 ## Definition of Done
-- [ ] `sendReviewApprovedEmail()` method added to EmailService
-- [ ] `sendReviewRejectedEmail()` method added to EmailService
-- [ ] Approval route sends approval notification
-- [ ] Rejection route sends rejection notification
-- [ ] Both check notification preferences
-- [ ] Approval email contains link to view
-- [ ] Rejection email contains reason and resubmit link
-- [ ] TypeScript compiles without errors
+- [x] `sendReviewApprovedEmail()` method added to EmailService
+- [x] `sendReviewRejectedEmail()` method added to EmailService
+- [x] Approval route sends approval notification
+- [x] Rejection route sends rejection notification
+- [x] Both check notification preferences
+- [x] Approval email contains link to view
+- [x] Rejection email contains reason and resubmit link
+- [x] TypeScript compiles without errors
 
 ## Test Scenarios
 1. **Approval, Notifications On:** Approval email sent
@@ -186,3 +186,28 @@ rejectReview(reviewId: number, reason: string): Promise<void>
 4. **Approval Email:** Contains brand, view link
 5. **Rejection Email:** Contains reason, resubmit link
 6. **No Reason Provided:** Rejection fails validation
+
+---
+
+## Dev Agent Record
+
+### Implementation Notes
+- Added `sendReviewApprovedEmail()` to `server/services/email.ts:291-320`
+- Added `sendReviewRejectedEmail()` to `server/services/email.ts:329-367`
+- Modified `/api/admin/reviews/:id/moderate` in `server/routes.ts:664-742`
+- Notification preference check: `prefs?.moderationOutcomes !== false` (defaults to enabled)
+- Rejection uses `notes` field as reason; defaults to generic message if not provided
+
+### Technical Decisions
+- Used existing unified moderate endpoint (action: "approve" | "reject") rather than separate endpoints
+- Rejection email provides default reason if notes not supplied
+- Approval email includes anonymity reminder for user reassurance
+
+## File List
+- `server/services/email.ts` - Added sendReviewApprovedEmail and sendReviewRejectedEmail methods
+- `server/routes.ts` - Modified moderation route to send author notifications
+
+## Change Log
+| Date | Change | Author |
+|------|--------|--------|
+| 2025-12-04 | Implemented moderation outcome notifications | Dev Agent |

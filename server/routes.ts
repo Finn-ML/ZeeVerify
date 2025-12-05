@@ -623,6 +623,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status: "pending",
       });
 
+      // Send notification to review author about the response
+      if (review.userId) {
+        const author = await storage.getUser(review.userId);
+        const brand = review.brandId ? await storage.getBrand(review.brandId) : null;
+
+        if (author && author.email && brand) {
+          // Check notification preferences - default to true if not explicitly false
+          const prefs = author.notificationPreferences as { reviewResponses?: boolean } | null;
+
+          if (prefs?.reviewResponses !== false) {
+            await emailService.sendResponseNotification(
+              author.email,
+              brand.name,
+              content,
+              parseInt(id)
+            );
+          }
+        }
+      }
+
       res.status(201).json(response);
     } catch (error) {
       console.error("Error creating response:", error);
@@ -834,7 +854,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { action, notes } = req.body;
       const moderatorId = req.user.id;
 
+      // Get review before moderation to access brandId and content
+      const reviewBefore = await storage.getReview(id);
+      if (!reviewBefore) {
+        return res.status(404).json({ message: "Review not found" });
+      }
+
       const review = await storage.moderateReview(id, action, moderatorId, notes);
+
+      // Get brand info for notifications
+      const brand = reviewBefore.brandId ? await storage.getBrand(reviewBefore.brandId) : null;
+
+      // Send notifications based on action
+      if (action === "approve") {
+        // Notify franchisor if brand is claimed
+        if (brand?.isClaimed && brand.claimedById) {
+          const franchisor = await storage.getUser(brand.claimedById);
+
+          if (franchisor && franchisor.email) {
+            const prefs = franchisor.notificationPreferences as { reviewResponses?: boolean } | null;
+
+            if (prefs?.reviewResponses !== false) {
+              await emailService.sendNewReviewNotification(
+                franchisor.email,
+                brand.name,
+                reviewBefore.content || '',
+                reviewBefore.overallRating,
+                parseInt(id)
+              );
+            }
+          }
+        }
+
+        // Notify review author of approval
+        if (reviewBefore.userId) {
+          const author = await storage.getUser(reviewBefore.userId);
+
+          if (author && author.email) {
+            const prefs = author.notificationPreferences as { moderationOutcomes?: boolean } | null;
+
+            if (prefs?.moderationOutcomes !== false) {
+              await emailService.sendReviewApprovedEmail(
+                author.email,
+                brand?.name || 'Unknown Brand',
+                parseInt(id)
+              );
+            }
+          }
+        }
+      } else if (action === "reject") {
+        // Notify review author of rejection
+        if (reviewBefore.userId) {
+          const author = await storage.getUser(reviewBefore.userId);
+
+          if (author && author.email) {
+            const prefs = author.notificationPreferences as { moderationOutcomes?: boolean } | null;
+
+            if (prefs?.moderationOutcomes !== false) {
+              await emailService.sendReviewRejectedEmail(
+                author.email,
+                brand?.name || 'Unknown Brand',
+                notes || 'Your review did not meet our community guidelines.'
+              );
+            }
+          }
+        }
+      }
+
       res.json(review);
     } catch (error) {
       console.error("Error moderating review:", error);

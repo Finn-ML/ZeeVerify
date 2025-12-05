@@ -4,7 +4,7 @@
 - **Epic:** 5 - Notification System
 - **Story ID:** 5.4
 - **Title:** Payment Confirmation Email
-- **Status:** ready-for-dev
+- **Status:** Ready for Review
 - **Dependencies:** Epic 1 complete, Story 4.3
 
 ## User Story
@@ -148,15 +148,15 @@ await emailService.sendPaymentConfirmation(
 | Links | Receipt URL (Stripe), Dashboard |
 
 ## Definition of Done
-- [ ] `sendPaymentConfirmation()` method added to EmailService
-- [ ] Webhook handler calls this method on success
-- [ ] Email contains all required information
-- [ ] Amount formatted as currency
-- [ ] Date formatted nicely
-- [ ] Transaction ID displayed (truncated)
-- [ ] Receipt link included if available
-- [ ] No unsubscribe link (transactional)
-- [ ] TypeScript compiles without errors
+- [x] `sendPaymentConfirmation()` method added to EmailService
+- [ ] Webhook handler calls this method on success *(pending Story 4.3)*
+- [x] Email contains all required information
+- [x] Amount formatted as currency
+- [x] Date formatted nicely
+- [x] Transaction ID displayed (truncated)
+- [x] Receipt link included if available
+- [x] No unsubscribe link (transactional)
+- [x] TypeScript compiles without errors
 
 ## Test Scenarios
 1. **Successful Payment:** Confirmation email sent
@@ -165,3 +165,31 @@ await emailService.sendPaymentConfirmation(
 4. **No Receipt:** Email still sends without receipt link
 5. **Formatting:** Currency and date properly formatted
 6. **Always Sends:** Ignores notification preferences
+
+---
+
+## Dev Agent Record
+
+### Implementation Notes
+- Added `sendPaymentConfirmation()` to `server/services/email.ts:378-466`
+- Uses Intl.NumberFormat for USD currency formatting
+- Uses toLocaleDateString for readable date format
+- Transaction ID truncated to last 12 characters for display
+- Receipt section conditionally rendered based on receiptUrl availability
+- Includes "What's Next?" section with onboarding guidance
+
+### Technical Decisions
+- Email method ready for integration with Story 4.3 (Stripe webhook)
+- Webhook integration deferred to Epic 4 implementation
+- No unsubscribe link as this is a transactional payment receipt
+
+### Pending Integration
+- Story 4.3 webhook handler should call `emailService.sendPaymentConfirmation()` on successful checkout
+
+## File List
+- `server/services/email.ts` - Added sendPaymentConfirmation method
+
+## Change Log
+| Date | Change | Author |
+|------|--------|--------|
+| 2025-12-04 | Implemented payment confirmation email method | Dev Agent |
