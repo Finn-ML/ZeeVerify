@@ -4,7 +4,7 @@
 - **Epic:** 3 - Account Management
 - **Story ID:** 3.1
 - **Title:** Profile Settings Page
-- **Status:** ready-for-dev
+- **Status:** Ready for Review
 - **Dependencies:** Epic 2 complete
 
 ## User Story
@@ -192,15 +192,36 @@ updateNotificationPreferences(userId: number, prefs: Partial<NotificationPrefere
 ```
 
 ## Definition of Done
-- [ ] `client/src/pages/settings.tsx` created
-- [ ] `PATCH /api/user/profile` route added
-- [ ] `PATCH /api/user/notifications` route added
-- [ ] `notificationPreferences` column added to schema
-- [ ] Profile form displays current values
-- [ ] Profile updates show success toast
-- [ ] Notification toggles save immediately
-- [ ] Email and user type shown as read-only
-- [ ] TypeScript compiles without errors
+- [x] `client/src/pages/settings.tsx` created (pre-existing, enhanced with moderationOutcomes)
+- [x] `PATCH /api/user/profile` route added (existing at `/api/users/me`)
+- [x] `PATCH /api/user/notifications` route added (existing at `/api/users/me/notifications`)
+- [x] `notificationPreferences` column added to schema (pre-existing)
+- [x] Profile form displays current values
+- [x] Profile updates show success toast ("Profile updated successfully")
+- [x] Notification toggles save immediately
+- [x] Email and user type shown as read-only
+- [x] TypeScript compiles without errors
+
+## Dev Agent Record
+
+### Implementation Notes
+- Settings page already existed with comprehensive functionality
+- Added `notificationPreferences` to `/api/auth/me` response (was missing)
+- Updated notification toggles to match story requirements:
+  - `reviewResponses` - Email notifications for review responses
+  - `moderationOutcomes` - Email notifications for moderation outcomes
+  - `marketingEmails` - Marketing emails (opt-in)
+- Fixed query invalidation to use correct key `/api/auth/me`
+- Toast message updated to "Profile updated successfully" per AC2
+
+### Files Modified
+- `server/routes.ts:105-128` - Added notificationPreferences to /api/auth/me
+- `client/src/pages/settings.tsx:49-53` - Updated notification state structure
+- `client/src/pages/settings.tsx:283-328` - Updated notification toggles UI
+- `client/src/pages/settings.tsx:87-88` - Fixed toast message and query key
+
+### Date
+2025-12-04
 
 ## Test Scenarios
 1. **View Profile:** Current values displayed

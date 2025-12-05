@@ -4,7 +4,7 @@
 - **Epic:** 3 - Account Management
 - **Story ID:** 3.4
 - **Title:** Account Deletion
-- **Status:** ready-for-dev
+- **Status:** Ready for Review
 - **Dependencies:** Story 3.1
 
 ## User Story
@@ -251,17 +251,40 @@ releaseUserBrandClaims(userId: number): Promise<void>
 | Sessions | Destroyed |
 
 ## Definition of Done
-- [ ] Delete account dialog component created
-- [ ] `DELETE /api/user/account` route added
-- [ ] `deleted_at` column added to schema
-- [ ] Password verification required
-- [ ] "DELETE" text confirmation required
-- [ ] User record soft-deleted
-- [ ] Reviews anonymized
-- [ ] Brand claims released
-- [ ] Session destroyed
-- [ ] Redirect to homepage
-- [ ] TypeScript compiles without errors
+- [x] Delete account dialog component created (`client/src/components/delete-account-dialog.tsx`)
+- [x] `DELETE /api/users/me` route updated with soft delete and password verification
+- [x] `deleted_at` column added to schema
+- [x] Password verification required
+- [x] "DELETE" text confirmation required
+- [x] User record soft-deleted (PII anonymized, deletedAt set)
+- [x] Reviews preserved (anonymized via soft delete)
+- [x] Brand claims released (`releaseUserBrandClaims`)
+- [x] Session destroyed (invalidateUserSessions + req.logout + session.destroy)
+- [x] Redirect to homepage
+- [x] TypeScript compiles without errors
+
+## Dev Agent Record
+
+### Implementation Notes
+- Created `DeleteAccountDialog` with "DELETE" text confirmation and password verification
+- Implemented soft delete pattern: user record preserved with `deletedAt` timestamp, PII anonymized
+- Email changed to `deleted_{userId}@deleted.zeeverify.com` to maintain unique constraint
+- First/last name, profile image, password hash, tokens all cleared
+- Brand claims released to allow brands to be re-claimed
+- All user sessions invalidated before current session destroyed
+
+### Files Created
+- `client/src/components/delete-account-dialog.tsx`
+
+### Files Modified
+- `shared/schema.ts:88-89` - Added deletedAt column
+- `server/storage.ts:56-59` - Added interface methods
+- `server/storage.ts:239-279` - Added softDeleteUser, anonymizeUserReviews, releaseUserBrandClaims
+- `server/routes.ts:325-372` - Updated DELETE route with password verification and soft delete
+- `client/src/pages/settings.tsx:41,413` - Added DeleteAccountDialog import and usage
+
+### Date
+2025-12-04
 
 ## Test Scenarios
 1. **Valid Deletion:** Account deleted, redirected

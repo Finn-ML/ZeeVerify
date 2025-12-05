@@ -10,17 +10,6 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -28,7 +17,6 @@ import {
   Mail,
   Bell,
   Shield,
-  Trash2,
   CheckCircle2,
   AlertTriangle,
   Camera,
@@ -36,6 +24,9 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { ChangeEmailDialog } from "@/components/change-email-dialog";
+import { ChangePasswordDialog } from "@/components/change-password-dialog";
+import { DeleteAccountDialog } from "@/components/delete-account-dialog";
 import type { User as UserType } from "@shared/schema";
 
 export default function Settings() {
@@ -47,10 +38,9 @@ export default function Settings() {
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [notifications, setNotifications] = useState({
-    newReviews: true,
-    responses: true,
-    leads: true,
-    marketing: false,
+    reviewResponses: true,
+    moderationOutcomes: true,
+    marketingEmails: false,
   });
 
   useEffect(() => {
@@ -85,8 +75,8 @@ export default function Settings() {
       return apiRequest("PATCH", "/api/users/me", data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-      toast({ title: "Profile updated", description: "Your profile has been saved." });
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
+      toast({ title: "Profile updated successfully" });
     },
     onError: () => {
       toast({ title: "Error", description: "Failed to update profile.", variant: "destructive" });
@@ -98,24 +88,10 @@ export default function Settings() {
       return apiRequest("PATCH", "/api/users/me/notifications", { preferences: prefs });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-      toast({ title: "Notifications updated", description: "Your preferences have been saved." });
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
     },
     onError: () => {
       toast({ title: "Error", description: "Failed to update notifications.", variant: "destructive" });
-    },
-  });
-
-  const deleteAccountMutation = useMutation({
-    mutationFn: async () => {
-      return apiRequest("DELETE", "/api/users/me");
-    },
-    onSuccess: () => {
-      toast({ title: "Account deleted", description: "Your account has been permanently deleted." });
-      window.location.href = "/";
-    },
-    onError: () => {
-      toast({ title: "Error", description: "Failed to delete account.", variant: "destructive" });
     },
   });
 
@@ -248,16 +224,19 @@ export default function Settings() {
 
                     <div className="space-y-2">
                       <Label htmlFor="email">Email</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        value={email}
-                        disabled
-                        className="bg-muted"
-                        data-testid="input-email"
-                      />
+                      <div className="flex gap-2">
+                        <Input
+                          id="email"
+                          type="email"
+                          value={email}
+                          disabled
+                          className="bg-muted flex-1"
+                          data-testid="input-email"
+                        />
+                        <ChangeEmailDialog />
+                      </div>
                       <p className="text-xs text-muted-foreground">
-                        Email cannot be changed. Contact support if you need to update it.
+                        Click "Change Email" to update your email address
                       </p>
                     </div>
 
@@ -284,15 +263,15 @@ export default function Settings() {
                 <CardContent className="space-y-6">
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
-                      <Label>New Reviews</Label>
+                      <Label>Review Responses</Label>
                       <p className="text-sm text-muted-foreground">
-                        Get notified when new reviews are posted on brands you follow
+                        Get notified when franchisors respond to your reviews
                       </p>
                     </div>
                     <Switch
-                      checked={notifications.newReviews}
-                      onCheckedChange={(checked) => handleNotificationChange("newReviews", checked)}
-                      data-testid="switch-new-reviews"
+                      checked={notifications.reviewResponses}
+                      onCheckedChange={(checked) => handleNotificationChange("reviewResponses", checked)}
+                      data-testid="switch-review-responses"
                     />
                   </div>
 
@@ -300,31 +279,15 @@ export default function Settings() {
 
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
-                      <Label>Response Notifications</Label>
+                      <Label>Moderation Outcomes</Label>
                       <p className="text-sm text-muted-foreground">
-                        Get notified when franchisors respond to reviews
+                        Get notified when your reviews are approved or rejected
                       </p>
                     </div>
                     <Switch
-                      checked={notifications.responses}
-                      onCheckedChange={(checked) => handleNotificationChange("responses", checked)}
-                      data-testid="switch-responses"
-                    />
-                  </div>
-
-                  <Separator />
-
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label>Lead Notifications</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Get notified about new leads and inquiries
-                      </p>
-                    </div>
-                    <Switch
-                      checked={notifications.leads}
-                      onCheckedChange={(checked) => handleNotificationChange("leads", checked)}
-                      data-testid="switch-leads"
+                      checked={notifications.moderationOutcomes}
+                      onCheckedChange={(checked) => handleNotificationChange("moderationOutcomes", checked)}
+                      data-testid="switch-moderation-outcomes"
                     />
                   </div>
 
@@ -338,9 +301,9 @@ export default function Settings() {
                       </p>
                     </div>
                     <Switch
-                      checked={notifications.marketing}
-                      onCheckedChange={(checked) => handleNotificationChange("marketing", checked)}
-                      data-testid="switch-marketing"
+                      checked={notifications.marketingEmails}
+                      onCheckedChange={(checked) => handleNotificationChange("marketingEmails", checked)}
+                      data-testid="switch-marketing-emails"
                     />
                   </div>
                 </CardContent>
@@ -387,6 +350,26 @@ export default function Settings() {
                 </CardContent>
               </Card>
 
+              <Card>
+                <CardHeader>
+                  <CardTitle>Password</CardTitle>
+                  <CardDescription>
+                    Change your account password
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <p className="font-medium">Update Password</p>
+                      <p className="text-sm text-muted-foreground">
+                        Change your password regularly for better security
+                      </p>
+                    </div>
+                    <ChangePasswordDialog />
+                  </div>
+                </CardContent>
+              </Card>
+
               <Card className="border-destructive/50">
                 <CardHeader>
                   <CardTitle className="text-destructive">Danger Zone</CardTitle>
@@ -402,32 +385,7 @@ export default function Settings() {
                         Permanently delete your account and all associated data
                       </p>
                     </div>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="destructive" className="gap-2" data-testid="button-delete-account">
-                          <Trash2 className="h-4 w-4" />
-                          Delete Account
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This action cannot be undone. This will permanently delete your
-                            account and remove all your data from our servers.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => deleteAccountMutation.mutate()}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                          >
-                            Delete Account
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                    <DeleteAccountDialog />
                   </div>
                 </CardContent>
               </Card>
