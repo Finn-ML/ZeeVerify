@@ -395,7 +395,7 @@ export default function BrandDetail() {
                           </Button>
                         ) : (
                           <Button asChild>
-                            <a href="/api/login">Sign in to Review</a>
+                            <Link href="/login">Sign in to Review</Link>
                           </Button>
                         )}
                       </CardContent>
@@ -549,7 +549,7 @@ export default function BrandDetail() {
                       and access leads.
                     </p>
                     <Button className="w-full" asChild>
-                      <a href="/api/login">Claim Profile</a>
+                      <Link href="/login">Claim Profile</Link>
                     </Button>
                   </CardContent>
                 </Card>

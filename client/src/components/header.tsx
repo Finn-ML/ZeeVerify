@@ -205,7 +205,7 @@ export function Header() {
                 asChild
                 data-testid="button-login"
               >
-                <a href="/api/login">Sign in</a>
+                <Link href="/login">Sign in</Link>
               </Button>
               <Button
                 size="sm"
@@ -213,9 +213,9 @@ export function Header() {
                 asChild
                 data-testid="button-signup"
               >
-                <a href="/api/login">
+                <Link href="/login">
                   Get Started
-                </a>
+                </Link>
               </Button>
             </div>
           )}

@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Eye, EyeOff, CheckCircle2, XCircle, Loader2 } from "lucide-react";
+import { Eye, EyeOff, CheckCircle2, XCircle, Loader2, Shield } from "lucide-react";
 import { registerSchema, type RegisterInput } from "@shared/schema";
 
 function PasswordStrengthIndicator({ password }: { password: string }) {
@@ -43,6 +43,7 @@ function PasswordStrengthIndicator({ password }: { password: string }) {
 export default function RegisterPage() {
   const [, setLocation] = useLocation();
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [serverError, setServerError] = useState("");
 
   const {
@@ -166,6 +167,28 @@ export default function RegisterPage() {
               </div>
 
               <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <div className="relative">
+                  <Input
+                    id="confirmPassword"
+                    type={showConfirmPassword ? "text" : "password"}
+                    {...register("confirmPassword")}
+                    placeholder="Confirm your password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  >
+                    {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+                {errors.confirmPassword && (
+                  <p className="text-sm text-red-500">{errors.confirmPassword.message}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
                 <Label>I am a...</Label>
                 <RadioGroup
                   defaultValue="franchisee"
@@ -193,6 +216,14 @@ export default function RegisterPage() {
                 {errors.userType && (
                   <p className="text-sm text-red-500">{errors.userType.message}</p>
                 )}
+              </div>
+
+              <div className="rounded-lg bg-muted/50 border border-border/50 p-4 flex gap-3">
+                <Shield className="h-5 w-5 text-accent shrink-0 mt-0.5" />
+                <div className="text-sm text-muted-foreground">
+                  <p className="font-medium text-foreground mb-1">Your privacy is protected</p>
+                  <p>All reviews are anonymous. Your name and email will never be displayed publicly.</p>
+                </div>
               </div>
 
               <Button

@@ -142,7 +142,7 @@ export default function Landing() {
                     className="h-14 px-8 text-base font-semibold border-2 hover:bg-muted/50"
                     data-testid="button-write-review"
                   >
-                    <a href="/api/login">Write a Review</a>
+                    <Link href="/login">Write a Review</Link>
                   </Button>
                 </div>
 
@@ -441,10 +441,10 @@ export default function Landing() {
                   className="h-14 px-8 text-base font-semibold shadow-lg shadow-primary/20 btn-glow group"
                   data-testid="button-start-review"
                 >
-                  <a href="/api/login">
+                  <Link href="/login">
                     Start Your Review
                     <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
-                  </a>
+                  </Link>
                 </Button>
               </div>
 
