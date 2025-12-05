@@ -1088,34 +1088,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Mark brand as claimed
           await storage.claimBrand(brandId, userId);
 
-          // Send confirmation email
+          // Send confirmation email using Story 5.4's payment confirmation method
           const user = await storage.getUser(userId);
           const brand = await storage.getBrand(brandId);
 
           if (user && brand && user.email) {
-            // Send payment confirmation email
-            const amountDollars = ((session.amount_total || 0) / 100).toFixed(2);
-            const content = `
-              <h2 style="color: #1a1f36; margin-bottom: 20px;">Payment Confirmed!</h2>
-              <p>Thank you for claiming <strong>${brand.name}</strong> on ZeeVerify.</p>
-              <div style="background-color: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                <p style="margin: 0 0 10px 0;"><strong>Amount:</strong> $${amountDollars}</p>
-                <p style="margin: 0 0 10px 0;"><strong>Brand:</strong> ${brand.name}</p>
-                <p style="margin: 0;"><strong>Transaction ID:</strong> ${session.id.slice(-8)}</p>
-              </div>
-              <p>Your brand now displays a verified badge. You can:</p>
-              <ul style="padding-left: 20px; line-height: 1.8;">
-                <li>Respond to franchisee reviews</li>
-                <li>View your brand analytics</li>
-                <li>Update your brand profile</li>
-              </ul>
-              <p style="text-align: center; margin: 30px 0;">
-                <a href="${process.env.BASE_URL || 'http://localhost:5000'}/brands/${brand.slug}" style="background-color: #c9a962; color: #1a1f36; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
-                  View Your Listing
-                </a>
-              </p>
-            `;
-            await emailService.sendBrandedEmail(user.email, `Brand Claimed: ${brand.name}`, content, false);
+            await emailService.sendPaymentConfirmation(
+              user.email,
+              brand.name,
+              (session.amount_total || 0) / 100, // Convert cents to dollars
+              session.id,
+              (session as any).receipt_url || undefined
+            );
           }
 
           console.log(`Brand ${brandId} claimed by user ${userId}`);

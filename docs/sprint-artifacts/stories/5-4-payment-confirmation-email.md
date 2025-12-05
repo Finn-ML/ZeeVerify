@@ -149,7 +149,7 @@ await emailService.sendPaymentConfirmation(
 
 ## Definition of Done
 - [x] `sendPaymentConfirmation()` method added to EmailService
-- [ ] Webhook handler calls this method on success *(pending Story 4.3)*
+- [x] Webhook handler calls this method on success
 - [x] Email contains all required information
 - [x] Amount formatted as currency
 - [x] Date formatted nicely
@@ -183,8 +183,9 @@ await emailService.sendPaymentConfirmation(
 - Webhook integration deferred to Epic 4 implementation
 - No unsubscribe link as this is a transactional payment receipt
 
-### Pending Integration
-- Story 4.3 webhook handler should call `emailService.sendPaymentConfirmation()` on successful checkout
+### Integration Complete
+- Story 4.3 webhook handler now calls `emailService.sendPaymentConfirmation()` on successful checkout
+- Replaced inline email HTML with proper method call
 
 ## File List
 - `server/services/email.ts` - Added sendPaymentConfirmation method
