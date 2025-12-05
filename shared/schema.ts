@@ -104,6 +104,7 @@ export const brands = pgTable("brands", {
   unitCount: integer("unit_count"),
   isClaimed: boolean("is_claimed").default(false),
   claimedById: varchar("claimed_by_id").references(() => users.id),
+  claimedAt: timestamp("claimed_at"),
   zScore: decimal("z_score", { precision: 4, scale: 2 }).default("0"),
   totalReviews: integer("total_reviews").default(0),
   averageRating: decimal("average_rating", { precision: 3, scale: 2 }).default("0"),
@@ -222,6 +223,22 @@ export const moderationLogs = pgTable("moderation_logs", {
   notes: text("notes"),
   createdAt: timestamp("created_at").defaultNow(),
 });
+
+// Payments table for Stripe transactions
+export const payments = pgTable("payments", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  brandId: varchar("brand_id").references(() => brands.id).notNull(),
+  stripeSessionId: varchar("stripe_session_id", { length: 255 }).notNull().unique(),
+  stripePaymentIntentId: varchar("stripe_payment_intent_id", { length: 255 }),
+  amount: integer("amount").notNull(), // in cents
+  currency: varchar("currency", { length: 3 }).default("usd").notNull(),
+  status: varchar("status", { length: 50 }).default("completed").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export type Payment = typeof payments.$inferSelect;
+export type InsertPayment = typeof payments.$inferInsert;
 
 // Relations
 export const usersRelations = relations(users, ({ many, one }) => ({

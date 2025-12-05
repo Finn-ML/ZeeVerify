@@ -1,43 +1,3 @@
-# Story 4.5: Payment Success Page
-
-## Story Info
-- **Epic:** 4 - Brand Claiming with Stripe
-- **Story ID:** 4.5
-- **Title:** Payment Success Page
-- **Status:** ready-for-dev
-- **Dependencies:** Story 4.3
-
-## User Story
-
-As a **franchisor who just completed payment**,
-I want **to see confirmation of my brand claim**,
-So that **I know the process completed successfully**.
-
-## Acceptance Criteria
-
-### AC1: Success Confirmation
-**Given** I complete Stripe checkout
-**When** I am redirected to the success page
-**Then** I see:
-- "Congratulations! You've claimed {Brand Name}"
-- Verified badge preview
-- Next steps (respond to reviews, update brand info)
-- Link to franchisor dashboard
-
-### AC2: Invalid Session
-**Given** I visit the success page without valid session
-**When** the page loads
-**Then** I am redirected to my dashboard
-
-## Technical Notes
-
-### Files to Create/Modify
-- **Create:** `client/src/pages/franchisor/claim-success.tsx`
-- **Modify:** `server/routes.ts` - Add session verification endpoint
-
-### Frontend Implementation
-```typescript
-// client/src/pages/franchisor/claim-success.tsx
 import { useEffect } from "react";
 import { useLocation, useSearch } from "wouter";
 import { useQuery } from "@tanstack/react-query";
@@ -50,6 +10,7 @@ import {
   Settings,
   BarChart,
   ArrowRight,
+  Loader2,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 
@@ -63,7 +24,9 @@ export default function ClaimSuccessPage() {
     queryKey: ["/api/checkout/verify-session", sessionId],
     queryFn: async () => {
       if (!sessionId) throw new Error("No session ID");
-      const res = await fetch(`/api/checkout/verify-session?session_id=${sessionId}`);
+      const res = await fetch(`/api/checkout/verify-session?session_id=${sessionId}`, {
+        credentials: "include",
+      });
       if (!res.ok) {
         const error = await res.json();
         throw new Error(error.message);
@@ -96,10 +59,8 @@ export default function ClaimSuccessPage() {
   if (isLoading) {
     return (
       <div className="container max-w-2xl py-16 text-center">
-        <div className="animate-pulse">
-          <div className="h-8 w-48 bg-muted rounded mx-auto mb-4" />
-          <div className="h-4 w-64 bg-muted rounded mx-auto" />
-        </div>
+        <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-muted-foreground" />
+        <p className="text-muted-foreground">Verifying your payment...</p>
       </div>
     );
   }
@@ -143,7 +104,7 @@ export default function ClaimSuccessPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-start gap-3">
-            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-semibold text-sm">
+            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-semibold text-sm flex-shrink-0">
               1
             </div>
             <div className="flex-1">
@@ -158,7 +119,7 @@ export default function ClaimSuccessPage() {
           </div>
 
           <div className="flex items-start gap-3">
-            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-semibold text-sm">
+            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-semibold text-sm flex-shrink-0">
               2
             </div>
             <div className="flex-1">
@@ -173,7 +134,7 @@ export default function ClaimSuccessPage() {
           </div>
 
           <div className="flex items-start gap-3">
-            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-semibold text-sm">
+            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-semibold text-sm flex-shrink-0">
               3
             </div>
             <div className="flex-1">
@@ -211,95 +172,3 @@ export default function ClaimSuccessPage() {
     </div>
   );
 }
-```
-
-### Backend - Session Verification
-```typescript
-// Add to server/routes.ts
-
-app.get("/api/checkout/verify-session", isAuthenticated, async (req, res) => {
-  const sessionId = req.query.session_id as string;
-  const userId = req.user!.id;
-
-  if (!sessionId) {
-    return res.status(400).json({ message: "Session ID required" });
-  }
-
-  // Verify session with Stripe
-  const session = await stripeService.retrieveSession(sessionId);
-
-  if (!session) {
-    return res.status(404).json({ message: "Session not found" });
-  }
-
-  // Verify this session belongs to the current user
-  if (session.metadata?.userId !== userId.toString()) {
-    return res.status(403).json({ message: "Access denied" });
-  }
-
-  // Check if payment was successful
-  if (session.payment_status !== "paid") {
-    return res.status(400).json({ message: "Payment not completed" });
-  }
-
-  // Get brand info
-  const brandId = parseInt(session.metadata?.brandId || "0");
-  const brand = await storage.getBrand(brandId);
-
-  res.json({
-    success: true,
-    brandId,
-    brandName: brand?.name || session.metadata?.brandName,
-    amount: (session.amount_total || 0) / 100,
-  });
-});
-```
-
-### Optional: Confetti Package
-```bash
-npm install canvas-confetti @types/canvas-confetti
-```
-
-## Definition of Done
-- [x] `client/src/pages/franchisor/claim-success.tsx` created
-- [x] `GET /api/checkout/verify-session` route added
-- [x] Session verification with Stripe
-- [x] User ownership verification
-- [x] Brand name displayed
-- [x] Verified badge preview shown
-- [x] Next steps guidance
-- [x] Dashboard and listing links
-- [x] Invalid session redirects to dashboard
-- [x] Confetti celebration (optional)
-- [x] TypeScript compiles without errors
-
-## Test Scenarios
-1. **Valid Session:** Success page displays
-2. **No Session ID:** Redirects to dashboard
-3. **Invalid Session:** Redirects to dashboard
-4. **Wrong User:** Access denied
-5. **Unpaid Session:** Error shown
-6. **Links Work:** Dashboard and listing accessible
-
----
-
-## Dev Agent Record
-
-### Files Created
-- `client/src/pages/franchisor/claim-success.tsx` - Payment success page with confetti
-
-### Files Modified
-- `server/routes.ts` - Added GET /api/checkout/verify-session endpoint
-- `package.json` - Installed canvas-confetti
-
-### Implementation Notes
-- Uses canvas-confetti for celebration effect
-- Verifies session ownership via metadata.userId comparison
-- Shows verified badge preview with brand name
-- Provides 3-step "What's Next" guidance
-- Links to brand listing and franchisor dashboard
-- Redirects to dashboard if session is invalid
-
-| Date | Change | Author |
-|------|--------|--------|
-| 2025-12-05 | Implemented payment success page | Dev Agent |

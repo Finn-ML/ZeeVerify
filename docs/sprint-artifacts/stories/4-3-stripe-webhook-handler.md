@@ -191,16 +191,16 @@ claimBrand(brandId: number, userId: number): Promise<void>
 4. Copy signing secret to `STRIPE_WEBHOOK_SECRET`
 
 ## Definition of Done
-- [ ] `POST /api/webhooks/stripe` route added
-- [ ] Raw body parser configured for webhook route
-- [ ] `payments` table created in schema
-- [ ] Signature verification implemented
-- [ ] `checkout.session.completed` handler works
-- [ ] Brand marked as claimed on success
-- [ ] Payment recorded in database
-- [ ] Idempotency check prevents duplicate processing
-- [ ] Confirmation email sent
-- [ ] TypeScript compiles without errors
+- [x] `POST /api/webhooks/stripe` route added
+- [x] Raw body parser configured for webhook route
+- [x] `payments` table created in schema
+- [x] Signature verification implemented
+- [x] `checkout.session.completed` handler works
+- [x] Brand marked as claimed on success
+- [x] Payment recorded in database
+- [x] Idempotency check prevents duplicate processing
+- [x] Confirmation email sent
+- [x] TypeScript compiles without errors
 
 ## Test Scenarios
 1. **Valid Webhook:** Brand claimed, payment recorded
@@ -209,3 +209,25 @@ claimBrand(brandId: number, userId: number): Promise<void>
 4. **Duplicate Event:** Idempotent, already_processed
 5. **Unknown Event:** 200 returned, no action
 6. **DB Error:** 500 returned, logged
+
+---
+
+## Dev Agent Record
+
+### Files Created
+- `shared/schema.ts` - Added payments table
+
+### Files Modified
+- `server/routes.ts` - Added POST /api/webhooks/stripe endpoint
+- `server/storage.ts` - Added getPaymentBySessionId, createPayment, claimBrand methods
+- `shared/schema.ts` - Added claimedAt column to brands table
+
+### Implementation Notes
+- Uses rawBody from express.json verify callback for signature verification
+- Implements idempotency check via stripeSessionId unique constraint
+- Sends branded confirmation email on successful payment
+- Handles checkout.session.completed and checkout.session.expired events
+
+| Date | Change | Author |
+|------|--------|--------|
+| 2025-12-05 | Implemented Stripe webhook handler | Dev Agent |
