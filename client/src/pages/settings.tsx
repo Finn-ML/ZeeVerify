@@ -19,7 +19,6 @@ import {
   Shield,
   CheckCircle2,
   AlertTriangle,
-  Camera,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -167,22 +166,12 @@ export default function Settings() {
                 <CardContent>
                   <form onSubmit={handleProfileSubmit} className="space-y-6">
                     <div className="flex items-center gap-6">
-                      <div className="relative">
-                        <Avatar className="h-20 w-20">
-                          <AvatarImage src={user.profileImageUrl || undefined} className="object-cover" />
-                          <AvatarFallback className="bg-primary text-primary-foreground text-xl">
-                            {getInitials()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <Button
-                          type="button"
-                          variant="secondary"
-                          size="icon"
-                          className="absolute bottom-0 right-0 h-8 w-8 rounded-full"
-                        >
-                          <Camera className="h-4 w-4" />
-                        </Button>
-                      </div>
+                      <Avatar className="h-20 w-20">
+                        <AvatarImage src={user.profileImageUrl || undefined} className="object-cover" />
+                        <AvatarFallback className="bg-primary text-primary-foreground text-xl">
+                          {getInitials()}
+                        </AvatarFallback>
+                      </Avatar>
                       <div className="space-y-1">
                         <h3 className="font-medium">{firstName} {lastName}</h3>
                         <p className="text-sm text-muted-foreground">{email}</p>
