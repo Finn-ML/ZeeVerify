@@ -10,6 +10,7 @@ import {
   wordFrequencies,
   savedComparisons,
   moderationLogs,
+  payments,
   type User,
   type UpsertUser,
   type Brand,
@@ -27,6 +28,8 @@ import {
   type ReviewReport,
   type WordFrequency,
   type ModerationLog,
+  type Payment,
+  type InsertPayment,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, ilike, desc, asc, sql, inArray, count } from "drizzle-orm";
@@ -110,6 +113,11 @@ export interface IStorage {
 
   // Word frequency operations
   getWordFrequencies(brandId: string): Promise<WordFrequency[]>;
+
+  // Payment operations
+  getPaymentBySessionId(sessionId: string): Promise<Payment | undefined>;
+  createPayment(payment: InsertPayment): Promise<Payment>;
+  claimBrand(brandId: string, userId: string): Promise<void>;
 
   // Stats
   getAdminStats(): Promise<{
@@ -648,6 +656,29 @@ export class DatabaseStorage implements IStorage {
       .where(eq(wordFrequencies.brandId, brandId))
       .orderBy(desc(wordFrequencies.count))
       .limit(20);
+  }
+
+  // Payment operations
+  async getPaymentBySessionId(sessionId: string): Promise<Payment | undefined> {
+    const [payment] = await db.select().from(payments).where(eq(payments.stripeSessionId, sessionId));
+    return payment;
+  }
+
+  async createPayment(payment: InsertPayment): Promise<Payment> {
+    const [newPayment] = await db.insert(payments).values(payment).returning();
+    return newPayment;
+  }
+
+  async claimBrand(brandId: string, userId: string): Promise<void> {
+    await db
+      .update(brands)
+      .set({
+        isClaimed: true,
+        claimedById: userId,
+        claimedAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(brands.id, brandId));
   }
 
   // Stats

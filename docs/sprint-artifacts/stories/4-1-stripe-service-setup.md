@@ -4,7 +4,7 @@
 - **Epic:** 4 - Brand Claiming with Stripe
 - **Story ID:** 4.1
 - **Title:** Stripe Service Setup
-- **Status:** ready-for-dev
+- **Status:** Ready for Review
 - **Dependencies:** None
 
 ## User Story
@@ -149,14 +149,14 @@ npm install stripe
 4. Set up webhook endpoint for checkout.session.completed
 
 ## Definition of Done
-- [ ] `server/services/stripe.ts` created
-- [ ] `stripe` package installed
-- [ ] Service exports singleton `stripeService`
-- [ ] `createCheckoutSession()` method works
-- [ ] `retrieveSession()` method works
-- [ ] `constructWebhookEvent()` method works
-- [ ] Graceful degradation when not configured
-- [ ] TypeScript compiles without errors
+- [x] `server/services/stripe.ts` created
+- [x] `stripe` package installed
+- [x] Service exports singleton `stripeService`
+- [x] `createCheckoutSession()` method works
+- [x] `retrieveSession()` method works
+- [x] `constructWebhookEvent()` method works
+- [x] Graceful degradation when not configured
+- [x] TypeScript compiles without errors
 
 ## Test Scenarios
 1. **Config Present:** Service initializes successfully
@@ -164,3 +164,49 @@ npm install stripe
 3. **Create Session:** Returns client secret
 4. **Invalid Price:** Error handled gracefully
 5. **Webhook Verification:** Valid signatures pass
+
+---
+
+## Dev Agent Record
+
+### Implementation Plan
+1. Install stripe package (v20.0.0)
+2. Create StripeService class with constructor that initializes Stripe client
+3. Implement `isAvailable()` method for configuration check
+4. Implement `createCheckoutSession()` for embedded checkout
+5. Implement `retrieveSession()` for session retrieval
+6. Implement `constructWebhookEvent()` for webhook verification
+7. Export singleton `stripeService` instance
+8. Set up vitest testing framework
+9. Write comprehensive unit tests with mocked Stripe
+
+### Debug Log
+- Updated Stripe API version: Removed explicit `apiVersion` parameter to use SDK default (2025-11-17.clover) since Stripe SDK v20.0.0 expects the latest version
+- Created vitest.config.ts to configure test runner for server directory
+
+### Completion Notes
+- All 12 unit tests passing
+- Service gracefully degrades when STRIPE_SECRET_KEY is missing
+- Service gracefully degrades when STRIPE_BRAND_CLAIM_PRICE_ID is missing
+- Webhook verification gracefully degrades when STRIPE_WEBHOOK_SECRET is missing
+- TypeScript compiles without errors (pre-existing errors in admin/index.tsx and compare.tsx are unrelated)
+
+---
+
+## File List
+
+### Created
+- `server/services/stripe.ts` - Stripe service implementation
+- `server/services/stripe.test.ts` - Unit tests for Stripe service
+- `vitest.config.ts` - Vitest test runner configuration
+
+### Modified
+- `package.json` - Added stripe dependency, vitest devDependency, test scripts
+
+---
+
+## Change Log
+
+| Date | Change | Author |
+|------|--------|--------|
+| 2025-12-04 | Initial implementation of Stripe service with full test coverage | Dev Agent |

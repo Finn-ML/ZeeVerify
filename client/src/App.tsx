@@ -13,6 +13,8 @@ import Compare from "@/pages/compare";
 import Settings from "@/pages/settings";
 import FranchiseePortal from "@/pages/franchisee";
 import FranchisorPortal from "@/pages/franchisor";
+import ClaimBrandPage from "@/pages/franchisor/claim-brand";
+import ClaimSuccessPage from "@/pages/franchisor/claim-success";
 import AdminDashboard from "@/pages/admin";
 import Register from "@/pages/register";
 import VerifyEmailSent from "@/pages/verify-email-sent";
@@ -42,6 +44,8 @@ function Router() {
       <Route path="/franchisee" component={FranchiseePortal} />
       <Route path="/franchisee/:rest*" component={FranchiseePortal} />
       <Route path="/franchisor" component={FranchisorPortal} />
+      <Route path="/franchisor/claim/:brandId" component={ClaimBrandPage} />
+      <Route path="/franchisor/claim-success" component={ClaimSuccessPage} />
       <Route path="/franchisor/:rest*" component={FranchisorPortal} />
       <Route path="/admin" component={AdminDashboard} />
       <Route path="/admin/:rest*" component={AdminDashboard} />

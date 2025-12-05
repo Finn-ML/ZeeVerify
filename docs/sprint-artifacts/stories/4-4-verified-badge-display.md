@@ -218,20 +218,41 @@ export function BrandDetailPage() {
 - Text badge uses gold at 10% opacity for background
 
 ## Definition of Done
-- [ ] `VerifiedBadge` component created
-- [ ] `VerifiedBadgeText` variant created
-- [ ] Brand cards show badge for claimed brands
-- [ ] Brand detail shows badge and verified section
-- [ ] Unclaimed brands show "Claim This Brand" CTA
-- [ ] CTA only visible to franchisors
-- [ ] Badge uses design system colors
-- [ ] Tooltip explains verification
-- [ ] TypeScript compiles without errors
+- [x] `VerifiedBadge` component created
+- [x] `VerifiedBadgeText` variant created
+- [x] Brand cards show badge for claimed brands
+- [x] Brand detail shows badge and verified section
+- [x] Unclaimed brands show "Claim This Brand" CTA
+- [x] CTA only visible to franchisors
+- [x] Badge uses design system colors
+- [x] Tooltip explains verification
+- [x] TypeScript compiles without errors
 
 ## Test Scenarios
 1. **Claimed Brand Card:** Badge visible
 2. **Unclaimed Brand Card:** No badge, CTA shown to franchisors
 3. **Claimed Detail Page:** Badge, verified section
+
+---
+
+## Dev Agent Record
+
+### Files Created
+- `client/src/components/verified-badge.tsx` - VerifiedBadge and VerifiedBadgeText components
+
+### Files Modified
+- `client/src/pages/brand-detail.tsx` - Added VerifiedBadgeText, improved claim CTA
+
+### Implementation Notes
+- Brand card already had verified badge (using CheckCircle2)
+- Created new VerifiedBadge component with gold/navy design system colors
+- Created VerifiedBadgeText variant with Shield icon for detail pages
+- Updated brand detail page claim CTA to show based on user role
+- Non-logged in users see sign-in prompt, franchisors see claim button
+
+| Date | Change | Author |
+|------|--------|--------|
+| 2025-12-05 | Implemented verified badge display | Dev Agent |
 4. **Unclaimed Detail (Franchisor):** Claim CTA shown
 5. **Unclaimed Detail (Non-Franchisor):** No CTA
 6. **Badge Tooltip:** Explanation on hover

@@ -7,6 +7,8 @@ import { randomBytes } from "crypto";
 import bcrypt from "bcrypt";
 import { z } from "zod";
 import { emailService } from "./services/email";
+import { stripeService } from "./services/stripe";
+import type Stripe from "stripe";
 
 // Security constants
 const BCRYPT_ROUNDS = 12;
@@ -848,6 +850,205 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching reports:", error);
       res.status(500).json({ message: "Failed to fetch reports" });
+    }
+  });
+
+  // Stripe Checkout routes
+  app.post("/api/checkout/create-session", isAuthenticated, async (req: any, res) => {
+    try {
+      const { brandId } = req.body;
+      const user = req.user;
+
+      // Verify user is a franchisor
+      if (user.role !== "franchisor") {
+        return res.status(403).json({ message: "Only franchisors can claim brands" });
+      }
+
+      // Get brand
+      const brand = await storage.getBrand(brandId);
+      if (!brand) {
+        return res.status(404).json({ message: "Brand not found" });
+      }
+
+      if (brand.isClaimed) {
+        return res.status(400).json({ message: "Brand is already claimed" });
+      }
+
+      // Check Stripe availability
+      if (!stripeService.isAvailable()) {
+        return res.status(503).json({ message: "Payment temporarily unavailable" });
+      }
+
+      // Create checkout session
+      const baseUrl = process.env.BASE_URL || "http://localhost:5000";
+      const session = await stripeService.createCheckoutSession({
+        brandId: parseInt(brand.id),
+        brandName: brand.name,
+        userId: parseInt(user.id),
+        userEmail: user.email,
+        returnUrl: `${baseUrl}/franchisor/claim-success?session_id={CHECKOUT_SESSION_ID}`,
+      });
+
+      if (!session) {
+        return res.status(500).json({ message: "Failed to create checkout session" });
+      }
+
+      res.json({ clientSecret: session.clientSecret });
+    } catch (error) {
+      console.error("Error creating checkout session:", error);
+      res.status(500).json({ message: "Failed to create checkout session" });
+    }
+  });
+
+  app.get("/api/checkout/verify-session", isAuthenticated, async (req: any, res) => {
+    try {
+      const sessionId = req.query.session_id as string;
+      const userId = req.user.id;
+
+      if (!sessionId) {
+        return res.status(400).json({ message: "Session ID required" });
+      }
+
+      // Verify session with Stripe
+      const session = await stripeService.retrieveSession(sessionId);
+
+      if (!session) {
+        return res.status(404).json({ message: "Session not found" });
+      }
+
+      // Verify this session belongs to the current user
+      if (session.metadata?.userId !== userId.toString()) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      // Check if payment was successful
+      if (session.payment_status !== "paid") {
+        return res.status(400).json({ message: "Payment not completed" });
+      }
+
+      // Get brand info
+      const brandId = session.metadata?.brandId || "0";
+      const brand = await storage.getBrand(brandId);
+
+      res.json({
+        success: true,
+        brandId,
+        brandName: brand?.name || session.metadata?.brandName,
+        amount: (session.amount_total || 0) / 100,
+      });
+    } catch (error) {
+      console.error("Error verifying session:", error);
+      res.status(500).json({ message: "Failed to verify session" });
+    }
+  });
+
+  // Stripe Webhook handler
+  app.post("/api/webhooks/stripe", async (req: any, res) => {
+    const signature = req.headers["stripe-signature"] as string;
+
+    if (!signature) {
+      console.error("Webhook missing signature");
+      return res.status(400).json({ message: "Missing signature" });
+    }
+
+    // Use rawBody from express.json verify callback
+    const payload = req.rawBody as Buffer;
+    if (!payload) {
+      console.error("Webhook missing raw body");
+      return res.status(400).json({ message: "Missing body" });
+    }
+
+    // Verify webhook signature
+    const event = stripeService.constructWebhookEvent(payload, signature);
+
+    if (!event) {
+      console.error("Webhook signature verification failed");
+      return res.status(400).json({ message: "Invalid signature" });
+    }
+
+    // Handle specific events
+    switch (event.type) {
+      case "checkout.session.completed": {
+        const session = event.data.object as Stripe.Checkout.Session;
+
+        // Extract metadata
+        const brandId = session.metadata?.brandId || "0";
+        const userId = session.metadata?.userId || "0";
+
+        if (!brandId || brandId === "0" || !userId || userId === "0") {
+          console.error("Webhook missing metadata:", session.id);
+          return res.status(400).json({ message: "Invalid session metadata" });
+        }
+
+        // Idempotency check - has this payment already been processed?
+        const existingPayment = await storage.getPaymentBySessionId(session.id);
+        if (existingPayment) {
+          console.log("Payment already processed:", session.id);
+          return res.json({ received: true, status: "already_processed" });
+        }
+
+        try {
+          // Record payment
+          await storage.createPayment({
+            userId,
+            brandId,
+            stripeSessionId: session.id,
+            stripePaymentIntentId: session.payment_intent as string,
+            amount: session.amount_total || 0,
+            currency: session.currency || "usd",
+            status: "completed",
+          });
+
+          // Mark brand as claimed
+          await storage.claimBrand(brandId, userId);
+
+          // Send confirmation email
+          const user = await storage.getUser(userId);
+          const brand = await storage.getBrand(brandId);
+
+          if (user && brand && user.email) {
+            // Send payment confirmation email
+            const amountDollars = ((session.amount_total || 0) / 100).toFixed(2);
+            const content = `
+              <h2 style="color: #1a1f36; margin-bottom: 20px;">Payment Confirmed!</h2>
+              <p>Thank you for claiming <strong>${brand.name}</strong> on ZeeVerify.</p>
+              <div style="background-color: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                <p style="margin: 0 0 10px 0;"><strong>Amount:</strong> $${amountDollars}</p>
+                <p style="margin: 0 0 10px 0;"><strong>Brand:</strong> ${brand.name}</p>
+                <p style="margin: 0;"><strong>Transaction ID:</strong> ${session.id.slice(-8)}</p>
+              </div>
+              <p>Your brand now displays a verified badge. You can:</p>
+              <ul style="padding-left: 20px; line-height: 1.8;">
+                <li>Respond to franchisee reviews</li>
+                <li>View your brand analytics</li>
+                <li>Update your brand profile</li>
+              </ul>
+              <p style="text-align: center; margin: 30px 0;">
+                <a href="${process.env.BASE_URL || 'http://localhost:5000'}/brands/${brand.slug}" style="background-color: #c9a962; color: #1a1f36; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
+                  View Your Listing
+                </a>
+              </p>
+            `;
+            await emailService.sendBrandedEmail(user.email, `Brand Claimed: ${brand.name}`, content, false);
+          }
+
+          console.log(`Brand ${brandId} claimed by user ${userId}`);
+          return res.json({ received: true, status: "success" });
+        } catch (error) {
+          console.error("Error processing payment:", error);
+          return res.status(500).json({ message: "Processing failed" });
+        }
+      }
+
+      case "checkout.session.expired": {
+        console.log("Checkout session expired:", event.data.object.id);
+        return res.json({ received: true });
+      }
+
+      default: {
+        console.log("Unhandled webhook event:", event.type);
+        return res.json({ received: true });
+      }
     }
   });
 

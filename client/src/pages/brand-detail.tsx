@@ -4,6 +4,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { ZScoreBadge } from "@/components/z-score-badge";
+import { VerifiedBadge, VerifiedBadgeText } from "@/components/verified-badge";
 import { StarRating } from "@/components/star-rating";
 import { ReviewCard } from "@/components/review-card";
 import { Button } from "@/components/ui/button";
@@ -185,12 +186,7 @@ export default function BrandDetail() {
               <div className="flex-1 space-y-4">
                 <div className="flex flex-wrap items-start gap-3">
                   <h1 className="text-3xl md:text-4xl font-bold">{brand.name}</h1>
-                  {brand.isClaimed && (
-                    <Badge variant="secondary" className="gap-1">
-                      <CheckCircle2 className="h-3 w-3 text-emerald-500" />
-                      Verified
-                    </Badge>
-                  )}
+                  {brand.isClaimed && <VerifiedBadgeText />}
                 </div>
 
                 <p className="text-muted-foreground max-w-2xl">
@@ -540,16 +536,33 @@ export default function BrandDetail() {
                 </CardContent>
               </Card>
 
-              {!brand.isClaimed && (
+              {!brand.isClaimed && user?.role === "franchisor" && (
+                <Card className="border-[#c9a962]/50 bg-[#c9a962]/5">
+                  <CardContent className="pt-6">
+                    <div className="flex items-center gap-2 mb-2">
+                      <VerifiedBadge size="sm" showTooltip={false} />
+                      <h3 className="font-semibold">Is this your brand?</h3>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Claim your profile to get a verified badge, respond to reviews,
+                      and access leads.
+                    </p>
+                    <Button className="w-full bg-[#c9a962] hover:bg-[#b8944d] text-[#1a1f36]" asChild>
+                      <Link href={`/franchisor/claim/${brand.id}`}>Claim This Brand</Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
+
+              {!brand.isClaimed && !user && (
                 <Card className="border-primary/50 bg-primary/5">
                   <CardContent className="pt-6">
                     <h3 className="font-semibold mb-2">Own this franchise?</h3>
                     <p className="text-sm text-muted-foreground mb-4">
-                      Claim your profile to respond to reviews, upload documents,
-                      and access leads.
+                      Sign in as a franchisor to claim your profile and respond to reviews.
                     </p>
                     <Button className="w-full" asChild>
-                      <Link href="/login">Claim Profile</Link>
+                      <Link href="/login">Sign In to Claim</Link>
                     </Button>
                   </CardContent>
                 </Card>

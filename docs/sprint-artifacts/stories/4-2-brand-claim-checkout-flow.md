@@ -231,15 +231,15 @@ VITE_STRIPE_PUBLISHABLE_KEY=pk_test_xxx
 ```
 
 ## Definition of Done
-- [ ] `client/src/pages/franchisor/claim-brand.tsx` created
-- [ ] `@stripe/stripe-js` and `@stripe/react-stripe-js` installed
-- [ ] `POST /api/checkout/create-session` route added
-- [ ] Benefits displayed before checkout
-- [ ] Stripe Embedded Checkout renders
-- [ ] Brand ID and user ID in session metadata
-- [ ] Franchisor role check
-- [ ] Already claimed check
-- [ ] TypeScript compiles without errors
+- [x] `client/src/pages/franchisor/claim-brand.tsx` created
+- [x] `@stripe/stripe-js` and `@stripe/react-stripe-js` installed
+- [x] `POST /api/checkout/create-session` route added
+- [x] Benefits displayed before checkout
+- [x] Stripe Embedded Checkout renders
+- [x] Brand ID and user ID in session metadata
+- [x] Franchisor role check
+- [x] Already claimed check
+- [x] TypeScript compiles without errors
 
 ## Test Scenarios
 1. **Non-Franchisor:** Access denied
@@ -248,3 +248,25 @@ VITE_STRIPE_PUBLISHABLE_KEY=pk_test_xxx
 4. **Payment Success:** Redirected to success page
 5. **Payment Failed:** Error shown, can retry
 6. **Stripe Unavailable:** Graceful error message
+
+---
+
+## Dev Agent Record
+
+### Files Created
+- `client/src/pages/franchisor/claim-brand.tsx` - Claim brand page with embedded checkout
+
+### Files Modified
+- `client/src/App.tsx` - Added routes for claim-brand and claim-success
+- `server/routes.ts` - Added POST /api/checkout/create-session endpoint
+- `package.json` - Installed @stripe/stripe-js, @stripe/react-stripe-js
+
+### Implementation Notes
+- Uses EmbeddedCheckoutProvider for Stripe integration
+- Displays benefits card before showing checkout
+- Validates franchisor role and brand not already claimed
+- Returns client secret for embedded checkout
+
+| Date | Change | Author |
+|------|--------|--------|
+| 2025-12-05 | Implemented brand claim checkout flow | Dev Agent |
