@@ -22,8 +22,15 @@ export function ReviewCard({ review, showBrandInfo = false, onFlag, className }:
   const getInitials = (firstName?: string | null, lastName?: string | null) => {
     const first = firstName?.charAt(0) || "";
     const last = lastName?.charAt(0) || "";
-    return (first + last).toUpperCase() || "A";
+    return (first + last).toUpperCase() || "F";
   };
+
+  const isDeletedUser = review.user?.deletedAt != null;
+  const displayName = isDeletedUser
+    ? "Former User"
+    : review.user?.firstName
+      ? `${review.user.firstName} ${review.user.lastName?.charAt(0) || ""}.`
+      : "Anonymous";
 
   const getSentimentColor = (sentiment?: string | null) => {
     switch (sentiment) {
@@ -49,7 +56,7 @@ export function ReviewCard({ review, showBrandInfo = false, onFlag, className }:
             </Avatar>
             <div className="text-center">
               <p className="font-medium text-sm">
-                {review.user?.firstName || "Anonymous"} {review.user?.lastName?.charAt(0)}.
+                {displayName}
               </p>
               {review.isVerified && (
                 <Badge variant="secondary" className="gap-1 mt-1">

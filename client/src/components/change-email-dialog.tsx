@@ -41,8 +41,7 @@ export function ChangeEmailDialog() {
     },
     onSuccess: (data) => {
       toast({
-        title: "Verification email sent",
-        description: `Check ${data.newEmail} to confirm your new email address.`,
+        title: `Verification email sent to ${data.newEmail}`,
       });
       setOpen(false);
       setNewEmail("");
@@ -50,8 +49,7 @@ export function ChangeEmailDialog() {
     },
     onError: (error: Error) => {
       toast({
-        title: "Error",
-        description: error.message,
+        title: error.message,
         variant: "destructive",
       });
     },

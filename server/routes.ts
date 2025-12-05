@@ -393,8 +393,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid account state" });
       }
 
-      // Check if same as current email
-      if (user.email === newEmail) {
+      // Check if same as current email (case-insensitive)
+      if (user.email?.toLowerCase() === newEmail.toLowerCase()) {
         return res.status(400).json({ message: "New email must be different from current email" });
       }
 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
@@ -62,10 +62,11 @@ export default function Settings() {
       setLastName(user.lastName || "");
       setEmail(user.email || "");
       if (user.notificationPreferences) {
-        setNotifications({
-          ...notifications,
-          ...(user.notificationPreferences as object),
-        });
+        const prefs = user.notificationPreferences as object;
+        setNotifications((prev) => ({
+          ...prev,
+          ...prefs,
+        }));
       }
     }
   }, [user]);

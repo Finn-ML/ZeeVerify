@@ -44,17 +44,17 @@ export default function VerifyNewEmailPage() {
   }, [token]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-background">
       <Header />
       <main className="flex-1 flex items-center justify-center p-4">
         <Card className="w-full max-w-md text-center">
           {status === "loading" && (
             <>
               <CardHeader>
-                <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                  <Loader2 className="h-8 w-8 text-gold animate-spin" />
+                <div className="mx-auto w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
+                  <Loader2 className="h-8 w-8 text-primary animate-spin" />
                 </div>
-                <CardTitle className="text-2xl font-bold text-navy">Verifying Your New Email</CardTitle>
+                <CardTitle className="text-2xl font-bold">Verifying Your New Email</CardTitle>
                 <CardDescription>Please wait while we update your email address...</CardDescription>
               </CardHeader>
             </>
@@ -66,14 +66,14 @@ export default function VerifyNewEmailPage() {
                 <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
                   <CheckCircle2 className="h-8 w-8 text-green-600" />
                 </div>
-                <CardTitle className="text-2xl font-bold text-navy">Email Changed Successfully!</CardTitle>
+                <CardTitle className="text-2xl font-bold">Email Changed Successfully!</CardTitle>
                 <CardDescription>
                   Your email address has been updated. You can now use your new email to log in.
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <Link href="/settings">
-                  <Button className="w-full bg-gold hover:bg-gold/90 text-navy font-semibold gap-2">
+                  <Button className="w-full gap-2">
                     Go to Settings
                     <ArrowRight className="h-4 w-4" />
                   </Button>
@@ -88,11 +88,11 @@ export default function VerifyNewEmailPage() {
                 <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
                   <XCircle className="h-8 w-8 text-red-600" />
                 </div>
-                <CardTitle className="text-2xl font-bold text-navy">Verification Failed</CardTitle>
+                <CardTitle className="text-2xl font-bold">Verification Failed</CardTitle>
                 <CardDescription>{errorMessage}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-muted-foreground">
                   The verification link may have expired or already been used.
                   Please try changing your email again from your account settings.
                 </p>
